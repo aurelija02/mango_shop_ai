@@ -1,9 +1,11 @@
 import styled from 'styled-components';
 
-export const CheckoutContainer = styled.main`
-  max-width: 1000px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+export const CheckoutContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 20px;
 `;
 
 export const CheckoutGrid = styled.div`
@@ -24,8 +26,10 @@ export const FormSection = styled.section`
 `;
 
 export const SectionTitle = styled.h2`
-  margin-bottom: 1.5rem;
-  color: ${props => props.theme.colors.primary};
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
 `;
 
 export const FormGroup = styled.div`
@@ -65,46 +69,94 @@ export const Select = styled.select`
   }
 `;
 
-export const OrderSummary = styled.aside`
-  background: ${props => props.theme.colors.white};
-  padding: 2rem;
+export const OrderSummary = styled.div`
+  background: white;
+  padding: 30px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  height: fit-content;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
 `;
 
 export const SummaryItem = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 16px;
+  color: #666;
 
-  &:last-child {
-    border-bottom: none;
+  > div {
+    display: flex;
+    align-items: center;
+    gap: 15px;
   }
 `;
 
-export const Total = styled(SummaryItem)`
-  font-weight: 700;
-  font-size: 1.2rem;
+export const QuantityControl = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f5f5f5;
+  padding: 5px;
+  border-radius: 4px;
+
+  span {
+    min-width: 20px;
+    text-align: center;
+  }
+`;
+
+export const QuantityButton = styled.button`
+  background: none;
+  border: none;
+  color: #4CAF50;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 5px;
+  
+  &:hover {
+    color: #45a049;
+  }
+`;
+
+export const DeleteButton = styled.button`
+  background: none;
+  border: none;
+  color: #ff4444;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 5px;
+  
+  &:hover {
+    color: #cc0000;
+  }
+`;
+
+export const Total = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 20px;
   border-top: 2px solid #eee;
-  padding-top: 1rem;
+  font-weight: bold;
+  font-size: 18px;
+  color: #333;
 `;
 
 export const SubmitButton = styled.button`
   width: 100%;
-  padding: 1rem;
-  background-color: ${props => props.theme.colors.primary};
+  padding: 15px;
+  margin-top: 20px;
+  background-color: #4CAF50;
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s;
 
   &:hover {
-    background-color: ${props => props.theme.colors.accent};
+    background-color: #45a049;
   }
 `; 

@@ -1,164 +1,73 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useCart } from '../../context/CartContext'; // Changed this line
 import {
   CheckoutContainer,
-  CheckoutGrid,
-  FormSection,
-  SectionTitle,
-  FormGroup,
-  Label,
-  Input,
-  Select,
   OrderSummary,
+  SectionTitle,
   SummaryItem,
   Total,
-  SubmitButton
+  SubmitButton,
+  QuantityControl,
+  QuantityButton,
+  DeleteButton
 } from './styles/Checkout.styles';
+import ErrorBoundary from '../../components/ErrorBoundary';
 
 const Checkout = () => {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    address: '',
-    city: '',
-    postalCode: '',
-    paymentMethod: 'swedbank'
-  });
+  const { cartItems, updateQuantity, removeFromCart } = useCart(); // Changed this line
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const calculateTotal = () => {
+    const itemsTotal = cartItems.reduce((sum, item) => 
+      sum + (item.price * item.quantity), 0
+    );
+    const shipping = cartItems.length > 0 ? 4.99 : 0;
+    return (itemsTotal + shipping).toFixed(2);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here we would implement the Swedbank PSD2 payment processing
-    console.log('Form submitted:', formData);
+    console.log('Processing payment with Swedbank', cartItems);
   };
 
   return (
-    <CheckoutContainer>
-      <form onSubmit={handleSubmit}>
-        <CheckoutGrid>
-          <div>
-            <FormSection>
-              <SectionTitle>Customer Information</SectionTitle>
-              <FormGroup>
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormGroup>
-            </FormSection>
-
-            <FormSection>
-              <SectionTitle>Shipping Address</SectionTitle>
-              <FormGroup>
-                <Label htmlFor="address">Street Address</Label>
-                <Input
-                  type="text"
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="city">City</Label>
-                <Input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="postalCode">Postal Code</Label>
-                <Input
-                  type="text"
-                  id="postalCode"
-                  name="postalCode"
-                  value={formData.postalCode}
-                  onChange={handleInputChange}
-                  required
-                />
-              </FormGroup>
-            </FormSection>
-
-            <FormSection>
-              <SectionTitle>Payment Method</SectionTitle>
-              <FormGroup>
-                <Label htmlFor="paymentMethod">Select Payment Method</Label>
-                <Select
-                  id="paymentMethod"
-                  name="paymentMethod"
-                  value={formData.paymentMethod}
-                  onChange={handleInputChange}
-                >
-                  <option value="swedbank">Swedbank</option>
-                  <option value="card">Credit Card</option>
-                  <option value="klarna">Klarna</option>
-                </Select>
-              </FormGroup>
-            </FormSection>
-          </div>
-
-          <OrderSummary>
-            <SectionTitle>Order Summary</SectionTitle>
-            <SummaryItem>
-              <span>Tommy Atkins Mango (2x)</span>
-              <span>$9.98</span>
+    <ErrorBoundary>
+      <CheckoutContainer>
+        <OrderSummary>
+          <SectionTitle>Order Summary</SectionTitle>
+          {cartItems.map(item => (
+            <SummaryItem key={item.id}>
+              <span>{item.name}</span>
+              <div>
+                <QuantityControl>
+                  <QuantityButton onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</QuantityButton>
+                  <span>{item.quantity}</span>
+                  <QuantityButton onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</QuantityButton>
+                </QuantityControl>
+                <span>${(item.price * item.quantity).toFixed(2)}</span>
+                <DeleteButton onClick={() => removeFromCart(item.id)}>×</DeleteButton>
+              </div>
             </SummaryItem>
-            <SummaryItem>
-              <span>Kent Mango (1x)</span>
-              <span>$5.99</span>
-            </SummaryItem>
+          ))}
+          {cartItems.length > 0 && (
             <SummaryItem>
               <span>Shipping</span>
               <span>$4.99</span>
             </SummaryItem>
-            <Total>
-              <span>Total</span>
-              <span>$20.96</span>
-            </Total>
-            <SubmitButton type="submit">Place Order</SubmitButton>
-          </OrderSummary>
-        </CheckoutGrid>
-      </form>
-    </CheckoutContainer>
+          )}
+          <Total>
+            <span>Total</span>
+            <span>${calculateTotal()}</span>
+          </Total>
+          {cartItems.length > 0 ? (
+            <SubmitButton onClick={handleSubmit}>
+              Pay with Swedbank
+            </SubmitButton>
+          ) : (
+            <SectionTitle>Your cart is empty</SectionTitle>
+          )}
+        </OrderSummary>
+      </CheckoutContainer>
+    </ErrorBoundary>
   );
 };
 
