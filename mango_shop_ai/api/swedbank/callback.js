@@ -9,12 +9,9 @@ export default async function handler(req, res) {
     // Get authorization code and state from Swedbank
     const { code, state } = req.query;
 
-    // Validate state to prevent CSRF attacks
-    const savedState = sessionStorage.getItem('swedbank_state');
-    if (state !== savedState) {
-      throw new Error('Invalid state parameter');
-    }
-
+    // Remove sessionStorage validation for now
+    // We can implement a more secure state validation later using cookies or database
+    
     if (!code) {
       throw new Error('No authorization code received');
     }
@@ -40,12 +37,8 @@ export default async function handler(req, res) {
       throw new Error(tokenData.tppMessages?.[0]?.text || 'Failed to exchange token');
     }
 
-    // Store the access token (you might want to store this in a secure way)
-    // For sandbox testing, we'll just log it
+    // Log the access token (for development only)
     console.log('Access token received:', tokenData.access_token);
-
-    // Clear the state from storage
-    sessionStorage.removeItem('swedbank_state');
 
     // Redirect to success page
     res.redirect(307, '/checkout/success');
