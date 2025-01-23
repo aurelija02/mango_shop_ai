@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCart } from '../../context/CartContext'; // Changed this line
+import { useCart } from '../../context/CartContext'; // This one is correct
 import {
   CheckoutContainer,
   OrderSummary,
@@ -10,8 +10,8 @@ import {
   QuantityControl,
   QuantityButton,
   DeleteButton
-} from './styles/Checkout.styles';
-import ErrorBoundary from '../../components/ErrorBoundary';
+} from './styles/Checkout.styles'; // This is correct if styles exist in this location
+import ErrorBoundary from '../../components/ErrorBoundary'; // This one is correct
 
 const Checkout = () => {
   const { cartItems, updateQuantity, removeFromCart } = useCart(); // Changed this line
