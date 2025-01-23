@@ -6,9 +6,9 @@ import { CartProvider } from './context/CartContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header/Header';
 import Home from './pages/Home/Home';
-import Checkout from './pages/Checkout/Checkout';
-import CheckoutSuccess from './pages/checkout/success';
-import CheckoutError from './pages/checkout/error';
+import Checkout from './pages/checkoutPages/Checkout.js';
+import CheckoutSuccess from './pages/checkoutPages/success.js';
+import CheckoutError from './pages/checkoutPages/error.js';
 
 const GlobalStyle = createGlobalStyle`${GlobalStyles}`;
 
