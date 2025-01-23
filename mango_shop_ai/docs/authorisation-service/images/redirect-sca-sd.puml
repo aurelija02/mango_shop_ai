@@ -1,0 +1,40 @@
+
+@startuml redirect-sca-sd
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam ParticipantPadding 30
+
+
+title User authorisation (redirect approach)
+
+participant TPP
+participant API
+actor User
+participant scaProvider as "SCA provider"
+
+autonumber 1
+TPP->API:POST or GET / something what requires SCA
+opt Explicit authorisation
+    autonumber 2.1
+    TPP->API: POST or GET / with //TPP-explicit-authorisation-preffered=true//
+    API-->TPP: 201 / Return //startAuthorisation// hyperlink 
+    TPP->API: POST / Request //startAuthorisation// endpoint
+end
+
+autonumber 3
+TPP<--API: 201 / Return SCA request \n(//scaRedirect, scaStatus, status)//
+TPP->User: Redirect with //scaRedirect// link
+
+note over User, scaProvider: Initiate SCA Application process
+
+autonumber 5.1
+!include /check-sca-status.puml
+
+note over User, scaProvider: Complete SCA Application process
+
+autonumber 6
+API->User: redirect user to //TPP-Redirect-URI//
+TPP<-User: User is redirected to //TPP-Redirect-URI//
+
+@enduml

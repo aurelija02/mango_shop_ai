@@ -1,0 +1,26 @@
+@startuml api-usage-countersigning
+
+skinparam monochrome true
+skinparam shadowing false
+
+title Countersigning diagram
+
+Actor User as PSU
+Participant TPP
+Participant Swedbank
+
+autonumber
+TPP->Swedbank:POST /Payment Initiation request
+
+== SCA1 flow ==
+
+
+    TPP->Swedbank: GET /Payment/status
+    TPP<--Swedbank:200 OK \n Return Payment //status = PATC//
+
+== SCA2 flow ==
+
+    TPP->Swedbank: GET /Payment/status
+    TPP<--Swedbank:200 OK \n Return Payment //status = final//
+    
+@enduml

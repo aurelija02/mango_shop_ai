@@ -16,17 +16,38 @@ import ErrorBoundary from '../../components/ErrorBoundary';
 const Checkout = () => {
   const { cartItems, updateQuantity, removeFromCart } = useCart(); // Changed this line
 
+  const initiateSwedbankPayment = () => {
+    // Sandbox configuration
+    const clientId = process.env.REACT_APP_SWEDBANK_CLIENT_ID;
+    const redirectUri = 'https://mango-tango-shop.vercel.app/api/swedbank/callback';
+    const state = Math.random().toString(36).substring(7); // Generate random state
+    
+    // For sandbox, we use PSD2sandbox scope
+    const scope = 'PSD2sandbox';
+    const bic = 'SANDLT22'
+    
+    // Construct the authorization URL
+    const authUrl = 'https://psd2.api.swedbank.com/psd2/authorize?' + 
+      `bic=${bic}&` +
+      `client_id=${clientId}&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `scope=${scope}&` +
+      `state=${state}&` +
+      'response_type=code';
+
+    // Store the state in sessionStorage for validation in callback
+    sessionStorage.setItem('swedbank_state', state);
+    
+    // Redirect to Swedbank's authorization page
+    window.location.href = authUrl;
+  };
+
   const calculateTotal = () => {
     const itemsTotal = cartItems.reduce((sum, item) => 
       sum + (item.price * item.quantity), 0
     );
     const shipping = cartItems.length > 0 ? 4.99 : 0;
     return (itemsTotal + shipping).toFixed(2);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Processing payment with Swedbank', cartItems);
   };
 
   return (
@@ -59,7 +80,7 @@ const Checkout = () => {
             <span>${calculateTotal()}</span>
           </Total>
           {cartItems.length > 0 ? (
-            <SubmitButton onClick={handleSubmit}>
+            <SubmitButton onClick={initiateSwedbankPayment}>
               Pay with Swedbank
             </SubmitButton>
           ) : (

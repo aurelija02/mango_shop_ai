@@ -1,0 +1,420 @@
+{
+  "basePath": "/",
+  "definitions": {
+    "certificateStatus": {
+      "type": "string",
+      "enum": [ "Onboarding in progress", 
+                "Invalid certificate", 
+                "Valid certificate", 
+                "Expired certificate", 
+                "Revoked certificate" ],
+      "description": "Indicates the status of the certificate within the bank system. If the certificate is in 'Valid certificate' status, it can be used for API requests. Certificates in other statuses cannot be used; only certificates with an 'Onboarding in progress' status can be changed to either a valid or invalid status, depending on the outcome of the onboarding process."
+    },
+    "certificateSubject": {
+      "type": "string",
+      "example": "CN=Sample Cert, OU=R&D, O=Company Ltd., L=Dublin 4, S=Dublin, C=IE",
+      "description": "Certificate subject is identity of certificate owner:\n CN: CommonName\n OU: OrganizationalUnit\n O: Organization\n L: Locality\n S: StateOrProvinceName\n C: CountryName"
+    },
+    "certificateIssuer": {
+      "type": "string",
+      "example": "CN=Sample Cert, OU=R&D, O=Company Ltd., L=Dublin 4, S=Dublin, C=IE",
+      "description": "Certificate issuer is digital signature of an entity (certificate authority) that has verified the certificate's contents:\n CN: CommonName\n OU: OrganizationalUnit\n O: Organization\n L: Locality\n S: StateOrProvinceName\n C: CountryName"
+    },
+    "certificateFingerPrint": {
+      "type": "string",
+      "pattern": "[A-F0-9]{6-50}",
+      "example": "A6B8476FC540A",
+      "description": "It is not stored in certificate, it is calculated on the fly. To check your certificate's fingerPrint you can use: openssl x509 -noout -fingerprint -sha256 -inform pem -in [certificate-file.crt]"
+    },
+    "certificateExpirationDate": {
+      "type": "string",
+      "format": "date-time",
+      "example": "2022-05-10 14:25",
+      "description": "Date and time when certificate will expire - date beyond which certificate invalidates."
+    },
+    "applicationName": {
+      "type": "string",
+      "example": "PISP application for mobileApp",
+      "description": "Application name is taken from https://developer.swedbank.com (Developer Portal)."
+    },
+    "mTLSPart": {
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [ "OK", "FAILED" ],
+          "description": "Status of mTLS connection establishment:\n\n- OK – connection established, certificate is accepted on technical level.\n\n- FAILED – something went wrong, further details can be found in the description field."
+        },
+        "description": {
+          "type": "string",
+          "description": "Provides details on potential issues with the mTLS connection."
+        },
+        "certificate" : {
+          "properties": {
+            "SHA1-FingerPrint" : {
+              "$ref": "#/definitions/certificateFingerPrint"
+            },
+            "subject": {
+              "$ref": "#/definitions/certificateSubject"
+            },
+            "issuer": {
+              "$ref": "#/definitions/certificateIssuer"
+            },
+            "registeredInApplication": {
+              "items":{
+                "$ref": "#/definitions/applicationName"
+              },
+              "type": "array",
+              "description": "List of applications registered in the developer portal and assigned an mTLS-established certificate."
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object",
+      "required": [ "status", "description", "certificate" ]
+    },
+    "QWACCertificate": {
+      "properties": {
+        "subject": {
+          "$ref": "#/definitions/certificateSubject"
+        },
+        "fingerPrintSha256": {
+          "$ref": "#/definitions/certificateFingerPrint"
+        },
+        "expirationDate": {
+          "$ref": "#/definitions/certificateExpirationDate"
+        },
+        "status": {
+          "$ref": "#/definitions/certificateStatus"
+        }
+      },
+      "type": "object"
+    },
+   "QSEALCertificate": {
+      "properties": {
+        "issuer": {
+          "$ref": "#/definitions/certificateIssuer"
+        },
+        "fingerPrintSha256": {
+          "$ref": "#/definitions/certificateFingerPrint"
+        },
+        "expirationDate": {
+          "$ref": "#/definitions/certificateExpirationDate"
+        },
+        "status": {
+          "$ref": "#/definitions/certificateStatus"
+        }
+      },
+      "type": "object"
+    },
+    "providedAuthenticationPart": {
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "format": "UUID"
+        },
+        "status": {
+          "type": "string",
+          "enum": [ "OK", "FAILED" ],
+          "description": "Status of provided authentication part:\n\n- OK – authentication successfull.\n\n- FAILED – something went wrong, further details can be found in the description field."
+        },
+        "description": {
+          "type": "string",
+          "description": "Provides details on potential issues with authentication."
+        },
+        "applicationName": {
+          "$ref": "#/definitions/applicationName"
+        },
+        "onboardedCertificates": {
+          "properties": {
+            "QWAC": {
+              "items": {
+                "$ref": "#/definitions/QWACCertificate"
+              },
+              "type": "array"
+            },
+            "QSEAL": {
+              "items": {
+                "$ref": "#/definitions/QSEALCertificate"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object",
+          "description": "List of certificates that are registered with provided application."
+        }
+      },
+      "type": "object",
+      "required": [ "clientId", "status", "description" ],
+      "description": "This object is provided only if parameter client_id is provided with request"
+    },
+    "okResponse" : {
+      "properties": {
+        "mTLS": {
+          "$ref": "#/definitions/mTLSPart"
+        },
+        "providedAuthentication": {
+          "$ref": "#/definitions/providedAuthenticationPart"
+        }
+      },
+      "type": "object",
+      "required": [ "mTLS" ]
+    },
+    "errorMessage": {
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "ERROR"
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ResponseError": {
+      "properties": {
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessage"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "host": "psd2.api.swedbank.com:443",
+  "info": {
+    "contact": {
+      "email": "openbanking@swedbank.com"
+    },
+    "description": "Used in onboarding process to verify and/or troubleshoot secure connection with the bank and signing of the request.",
+    "license": {
+      "name": "See Developer Documentation",
+      "url": "https://online.swedbank.se/ConditionsEarchive/download?bankid=1111&id=WEBDOC-PRODE24296774"
+    },
+    "title": "Troubleshoot Services API",
+    "version": "3.0.0"
+  },
+  "parameters": {
+    "client_id": {
+      "description": "API Key (Client ID) from Swedbank developer portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "client_id",
+      "required": false,
+      "type": "string"
+    },
+    "client_secret": {
+      "description": "Client Secret (Shared secret) from Swedbank developer portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "client_secret",
+      "required": false,
+      "type": "string"
+    },
+    "redirect_uri": {
+      "description": "OAuth2.0 standart defined redirect_uri. URI, to which PSU should be redirected after the completion of SCA process in Swedbank API user interface.  Must be declared in Open Bank Developer Portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "redirect_uri",
+      "required": false,
+      "type": "string"
+    },
+    "req_id": {
+      "description": "ID of the request determined by the initiating party. It must be unique for each request. It corresponds to X-Request-ID header in real API. ",
+      "format": "UUID",
+      "in": "query",
+      "name": "req_id",
+      "required": false,
+      "type": "string"
+    },
+    "header_date": {
+      "description": "Standard HTTP header defines the date and time at which the message was originated (in 'HTTP-date' format as defined by RFC 7231 Date/Time Formats, for example, 'Mon, 01 Apr 2019 15:15:01GMT'). It corresponds to Date header in real API. ",
+      "format": "date-time-rfc1123",
+      "in": "query",
+      "name": "headerDate",
+      "required": false,
+      "type": "string"
+    },
+    "certificate": {
+      "description": "Certificate public part in base64 format, same as registered in Developer Portal in application \"CustomFields\" tab, \"QSeal certificate\" field.",
+      "in": "query",
+      "name": "certificate",
+      "required": true,
+      "type": "string"
+    },
+    "req_body": {
+      "description": "Body of the request that you intend to sign. Be careful with newline symbols, as those differ per operating system. ",
+      "in": "query",
+      "name": "reqBody",
+      "required": true,
+      "type": "string"
+    }
+  },
+  "responses": {
+    "mTLS_200": {
+      "description": "OK",
+      "schema": {
+        "$ref": "#/definitions/okResponse"
+      },
+      "headers": {
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "status": "OK"
+        }
+      }
+    },
+    "signature_200": {
+      "description": "HTML page"
+    },
+    "Error_500": {
+      "description": "Internal Server Error",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "INTERNAL_ERROR",
+              "text": "Internal Error"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "paths": {
+    "/v1/testMutualSSL": {
+      "get": {
+        "description": "Allows to check and/or troubleshoot mTLS connection with the bank during onboarding process. It can be called from your application in development phase. For more information about mTLS establishment and certificates used for it, see https://psd2.api.swedbank.com/support/v1/qa.",
+        "operationId": "testingMTLS",
+        "parameters": [
+          {
+            "$ref": "#/parameters/client_id"
+          },
+          {
+            "$ref": "#/parameters/client_secret"
+          },
+          {
+            "$ref": "#/parameters/redirect_uri"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/mTLS_200"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          }
+        },
+        "summary": "Testing mutual TLS connection",
+        "tags": [
+          "testMTLS"
+        ]
+      }
+    },
+    "/v2/testSignature": {
+      "get": {
+        "description": "Allows to check and/or troubleshoot signing of the request during onboarding process. It is UI based endpoint (https://psd2.api.swedbank.com/v2/testSignature), which will provide values for signature header generation.  For more information about request signing, see https://psd2.api.swedbank.com/support/v1/qa. ",
+        "operationId": "testingSignatureUIInput",
+        "parameters": [
+          {
+            "$ref": "#/parameters/req_id"
+          },
+          {
+            "$ref": "#/parameters/header_date"
+          }
+        ],
+        "produces": [
+          "text/html"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/signature_200"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          }
+        },
+        "summary": "Testing request signing with QSEAL certificate",
+        "tags": [
+          "testSignature"
+        ]
+      },
+      "post": {
+        "description": "Allows to check and/or troubleshoot signing of the request during onboarding process. It is UI based endpoint (https://psd2.api.swedbank.com/v2/testSignature), which will provide values for signature header generation.  For more information about request signing, see https://psd2.api.swedbank.com/support/v1/qa. ",
+        "operationId": "testingSignatureUIoutput",
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/req_id"
+          },
+          {
+            "$ref": "#/parameters/header_date"
+          },
+          {
+            "$ref": "#/parameters/certificate"
+          },
+          {
+            "$ref": "#/parameters/req_body"
+          }
+        ],
+        "produces": [
+          "text/html"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/signature_200"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          }
+        },
+        "summary": "Testing request signing with QSEAL certificate",
+        "tags": [
+          "testSignature"
+        ]
+      }
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "tags": [
+    {
+      "description": "Technical endpoints to troubleshoot issues with certificates in onboarding process.",
+      "name": "Certificates"
+    }
+  ]
+}

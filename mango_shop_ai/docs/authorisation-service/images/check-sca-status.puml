@@ -1,0 +1,6 @@
+@startuml
+loop while scaStatus not changed
+    TPP->API: GET/ Request //scaStatus//
+    TPP<--API: 200/ Return //scaStatus// \n(//finalised//)
+end
+@enduml

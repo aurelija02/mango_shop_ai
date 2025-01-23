@@ -1,0 +1,36 @@
+@startuml decoupled-sca-sd
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam ParticipantPadding 30
+
+
+title User authorisation (decoupled approach)
+
+actor User as PSU
+participant TPP
+participant API
+
+autonumber 1
+TPP->API: POST or GET / something what requires SCA
+
+autonumber 2.1
+opt Explicit authorisation
+    TPP->API: POST or GET / with //TPP-explicit-authorisation-preffered=true//
+    API-->TPP: 201 / Return //startAuthorisation// hyperlink
+    TPP->API: POST / Request //startAuthorisation// endpoint
+end
+
+autonumber 3
+TPP<--API: 201 / Return SCA PATCH request \n(//selectAuthenticationMethod, scaStatus, status//)
+TPP->API: Provide selected SCA method with //selectAuthenticationMethod// link and start SCA process
+
+== Initiate SCA Application process ==
+
+autonumber 5.1
+!include /check-sca-status-decoupled.puml
+
+autonumber 6
+== Complete SCA Application process ==
+
+@enduml

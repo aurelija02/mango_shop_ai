@@ -1,0 +1,25 @@
+@startuml refresh-access-token
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam ParticipantPadding 30
+
+
+title Get new access token
+
+participant TPP
+participant Swedbank
+
+autonumber 1
+TPP->Swedbank: Make any request
+
+Swedbank-->TPP: Response
+opt TOKEN_INVALID error received?
+TPP->Swedbank: POST/token with grant-type=refresh_token (check Swagger)
+Swedbank-->TPP: New access token
+TPP->Swedbank: Repeat request with new access token
+Swedbank-->TPP: Response
+end
+TPP->TPP: Handle response
+
+@enduml

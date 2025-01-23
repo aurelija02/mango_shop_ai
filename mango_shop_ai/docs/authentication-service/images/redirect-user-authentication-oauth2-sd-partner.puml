@@ -1,0 +1,31 @@
+@startuml redirect-user-authentication-oauth2-sd
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam ParticipantPadding 30
+
+title User authentication diagram using OAuth 2.0 (Redirect Approach)
+
+Actor User as PSU
+participant "Swedbank UI" as UI
+participant Partner
+participant API
+
+autonumber
+Partner->API: GET  /authorize
+Partner<--API: 302 Redirect \n /login
+PSU<-Partner: 302 redirect to /login
+PSU->UI: user is redirected to Swedbank UI
+
+== start user authorization ==
+PSU<-UI: redirect to //redirect_uri//;
+PSU->Partner: redirected to //redirect_uri, accessCode//;
+== end user authorization ==
+
+'Request OAuth 2.0 token
+Partner->API:  POST /token (//client_id, client_secret, redirect_uri//) 
+'OAuth 2.0 access and refresh token
+Partner<--API: 200 OK \n //access_token, refresh_token, login-method//
+
+
+@enduml

@@ -1,0 +1,379 @@
+{
+  "basePath": "/psd2",
+  "definitions": {
+    "errorMessage": {
+      "description": "Messages to the TPP on operational issues.",
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "ERROR"
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "category",
+        "code"
+      ],
+      "type": "object"
+    },
+    "ResponseError": {
+      "properties": {
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessage"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "host": "psd2.api.swedbank.com:443",
+  "info": {
+    "contact": {
+      "email": "openbanking@swedbank.com"
+    },
+    "description": "This endpoint is used to initiate OAuth2.0 defined authentication flow to generate OAuth2.0 token in redirect approach. ",
+    "license": {
+      "name": "See Developer Documentation",
+      "url": "https://online.swedbank.se/ConditionsEarchive/download?bankid=1111&id=WEBDOC-PRODE24296774"
+    },
+    "title": "PSD2 Authorization API",
+    "version": "2.1.0"
+  },
+  "parameters": {
+    "client_id": {
+      "description": "API Key (Client ID) from Swedbank developer portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "client_id",
+      "required": true,
+      "type": "string"
+    },
+    "bic": {
+      "description": "Bank Identifier Code. Mandatory, unless country specific URL is being used to call API.",
+      "enum": [
+        "SANDSESS",
+        "SANDEE2X",
+        "SANDLT22",
+        "SANDLV22",
+        "SWEDSESS",
+        "HABAEE2X",
+        "HABALT22",
+        "HABALV22"
+      ],
+      "in": "query",
+      "name": "bic",
+      "required": false,
+      "type": "string"
+    },
+    "response_type": {
+      "description": "OAuth2.0 standard defined response format. The only supported value is 'code'.",
+      "in": "query",
+      "name": "response_type",
+      "required": true,
+      "type": "string",
+      "default": "code",
+      "enum": [
+        "code"
+      ]
+    },
+    "state": {
+      "description": "OAuth2.0 standard defined optional parameter used as a security measure. In successful login flow, 'state' parameter will be provided when redirecting PSU back to TPP.",
+      "in": "query",
+      "name": "state",
+      "required": false,
+      "type": "string"
+    },
+    "scope": {
+      "description": "OAuth2.0 standard defined parameter. In current version, 'PSD2' and 'PSD2sandbox' are supported to distinguish access between production and sandbox APIs. Additional scopes can be specified to gain access to user's accounts and their resources during the authentication (login) process. This would allow to skip Strong Customer Authentication (SCA) step in consent creation flow, automatically validating the consent. For more information about scopes available for specific countries, refer to the Developer Documentation.",
+      "in": "query",
+      "name": "scope",
+      "required": true,
+      "type": "string"
+    },
+    "redirect_uri": {
+      "description": "OAuth2.0 standard defined mandatory parameter. URI, to which PSU has to be redirected upon successful login in Swedbank UI. It must be declared in Swedbank developer portal.",
+      "in": "query",
+      "name": "redirect_uri",
+      "required": true,
+      "type": "string"
+    },
+    "Date": {
+      "description": "Standard http header element defines date and time at which the message was originated (in \"HTTP-date\" format as defined by RFC 7231 Date/Time Formats e.g. Mon, 01 Apr 2019 15:15:01GMT )",
+      "format": "date-time-rfc1123",
+      "in": "header",
+      "name": "Date",
+      "required": false,
+      "type": "string"
+    },
+    "X-Request-ID": {
+      "description": "ID of the request determined by the initiating party. It must be unique for each request, used to identify the specific request in support processes.",
+      "format": "UUID",
+      "in": "header",
+      "name": "X-Request-ID",
+      "required": false,
+      "type": "string"
+    }
+  },
+  "responses": {
+    "response_302": {
+      "description": "Redirect URL is generated and returned in 'Location' header for PSU to access Swedbank's authentication (login) page.",
+      "headers": {
+        "Location": {
+          "description": "Redirect URL. Must be forwarded to user's browser",
+          "type": "string",
+          "format": "url"
+        }
+      }
+    },
+    "Error_400": {
+      "description": "Bad request",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "FORMAT_ERROR",
+              "text": "Missing required parameter or dublicate"
+            }
+          ]
+        }
+      }
+    },
+    "Error_404": {
+      "description": "Forbidden, resource not found",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "BACKEND_ERROR",
+              "text": "Resource not found for authorize id={{$authorizeID}}"
+            }
+          ]
+        }
+      }
+    },
+    "Error_405": {
+      "description": "Not allowed HTTP method",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "SERVICE_INVALID",
+              "text": "Got: ${http_method_used} allowed: ${http_method_allowed}"
+            }
+          ]
+        }
+      }
+    },
+    "Error_429": {
+      "description": "Access exceeded - too many requests",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "ACCESS_EXCEEDED",
+              "text": "Reached parallel requests limit: (10)"
+            }
+          ]
+        }
+      }
+    },
+    "Error_500": {
+      "description": "Internal Server Error",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "INTERNAL_ERROR",
+              "text": "Internal Error"
+            }
+          ]
+        }
+      }
+    },
+    "Error_503": {
+      "description": "Service Temporary Unavailable",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "TEMPORARY_UNAVAILABLE",
+              "text": "Planned system maintenance ongoing"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "paths": {
+    "/authorize": {
+      "get": {
+        "description": "Initiate authentication flow. This endpoint will return a redirect link where PSU has to be redirected for login in Swedbank's user interface. Upon successful login, PSU will be redirected back to TPP (to 'redirect_uri' provided in the request) with 'access_code' and 'state' parameters.",
+        "operationId": "OAuth2authorize",
+        "parameters": [
+          {
+            "$ref": "#/parameters/bic"
+          },
+          {
+            "$ref": "#/parameters/client_id"
+          },
+          {
+            "$ref": "#/parameters/response_type"
+          },
+          {
+            "$ref": "#/parameters/scope"
+          },
+          {
+            "$ref": "#/parameters/redirect_uri"
+          },
+          {
+            "$ref": "#/parameters/state"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "302": {
+            "$ref": "#/responses/response_302"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Request for access code",
+        "tags": [
+          "authorization"
+        ]
+      },
+      "post": {
+        "description": "Initiate authentication flow. This endpoint will return a redirect link where PSU has to be redirected for login in Swedbank's user interface. Upon successful login, PSU will be redirected back to TPP (to 'redirect_uri' provided in the request) with 'access_code' and 'state' parameters.",
+        "operationId": "OAuth2authorizeSecure",
+        "consumes": [ 
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/bic"
+          },
+          {
+            "$ref": "#/parameters/client_id"
+          },
+          {
+            "$ref": "#/parameters/response_type"
+          },
+          {
+            "$ref": "#/parameters/scope"
+          },
+          {
+            "$ref": "#/parameters/redirect_uri"
+          },
+          {
+            "$ref": "#/parameters/state"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "302": {
+            "$ref": "#/responses/response_302"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Request for access code",
+        "tags": [
+          "authorization"
+        ]
+      }
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "tags": [
+    {
+      "description": "",
+      "name": "authorization"
+    }
+  ]
+}

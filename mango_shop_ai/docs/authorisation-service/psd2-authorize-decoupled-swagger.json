@@ -1,0 +1,957 @@
+{
+  "basePath": "/psd2",
+  "definitions": {
+    "link": {
+      "properties": {
+        "href": {
+          "description": "URL path to the resource",
+          "type": "string",
+          "pattern": "^/psd2/v5/"
+        }
+      },
+      "example": "/psd2/authorize-decoupled/authorize/{authorizeId}",
+      "required": [
+        "href"
+      ],
+      "type": "object"
+    },
+    "errorMessage": {
+      "description": "Messages to the TPP on operational issues.",
+      "properties": {
+        "category": {
+          "description": "Category of the TPP message category",
+          "type": "string",
+          "enum": [
+            "ERROR"
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "category",
+        "code"
+      ],
+      "type": "object"
+    },
+    "availableBankDetails": {
+      "description": "Details of available bank",
+      "properties": {
+        "bankID": {
+          "description": "ID of an available bank",
+          "type": "string",
+          "maxLength": 5
+        },
+        "name": {
+          "description": "Name of an available bank",
+          "type": "string"
+        }
+      },
+      "required": [
+        "bankID",
+        "name"
+      ]
+    },
+    "availableAuthenticationMethodDetails": {
+      "description": "Details of available authentication method.",
+      "properties": {
+        "authenticationMethodId": {
+          "description": "An identification of the authentication method.",
+          "type": "string"
+        },
+        "authenticationType": {
+          "description": "Type of the authentication method a.k.a friendly name.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "authenticationMethodId",
+        "authenticationType"
+      ]
+    },
+    "ResponseError": {
+      "properties": {
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessage"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "psuDataObject": {
+      "description": "PSU authentication data needed for selected authentication method. Required in Baltic countries, optional in Sweden.",
+      "properties": {
+        "phoneNumber": {
+          "description": "Phone number of the PSU. Must be provided if \"MOBILE_ID\" is chosen as authentication method.",
+          "type": "string"
+        },
+        "personalID": {
+          "description": "Personal number (national identification number) of the PSU. Must be provided if \"SMART_ID\", \"SIMPLE_ID\" or \"EPARAKSTS_MOBILE\" is chosen as authentication method.",
+          "type": "string"
+        },
+        "bankID": {
+          "description": "In Sweden only. In Sweden, user can have engagement in one bank (Swedbank or single Savings Bank) or in several banks. Each bank has it's own bankId. This parameter is used to identify in which bank user wants to authorize. If user has engagement in a single bank, it is not required. If user has accounts in several banks, but this parameter is omitted in this request, TPP will have to provide it with a separate PUT request. To retrieve available bankIds, TPP can call GET '/available-bankids' endpoint.",
+          "type": "string"
+        }
+      }
+    },
+    "authenticationObject": {
+      "description": "Identifies authentication method selected by PSU. TPP should present it for PSU for informational purposed.",
+      "properties": {
+        "authenticationType": {
+          "description": "Type of the authentication method a.k.a friendly name.",
+          "type": "string",
+          "example": "Smart-Id"
+        },
+        "authenticationMethodId": {
+          "description": "An identification of the authentication method.",
+          "type": "string",
+          "example": "SMART_ID"
+        }
+      },
+      "type": "object",
+      "required": [
+        "authenticationType",
+        "authenticationMethodId"
+      ]
+    },
+    "decoupledAuthorizeInitiationBody": {
+      "description": "Content of the body of a decoupled authorization request.",
+      "properties": {
+        "scope": {
+          "description": "OAuth2.0 standard defined scope. In current version, 'PSD2' and 'PSD2sandbox' are supported to distinguish access between production and sandbox APIs. Additional scopes can be specified to gain access to user's accounts and their resources during the authentication (login) process. This would allow to skip Strong Customer Authentication (SCA) step in consent creation flow, automatically validating the consent. For more information about scopes available for specific countries, refer to the Developer Documentation.",
+          "type": "string",
+          "example": "PSD2 PSD2account_list"
+        },
+        "clientID": {
+          "description": "API Key (Client ID) from Swedbank developer portal.",
+          "format": "UUID",
+          "type": "string",
+          "example": "l700a00b00c00d00a00b00c00d00a000"
+        },
+        "redirectUri": {
+          "description": "OAuth2.0 standard defined redirectUri. It must be declared in Swedbank developer portal.",
+          "type": "string",
+          "example": "https://my-tpp-redirect-uri.com"
+        },
+        "authenticationMethodId": {
+          "description": "An identification of the authentication method. Required in order to start SCA process. To retrieve available authentication methods, TPP can call GET '/available-authentication-methods' endpoint.",
+          "type": "string",
+          "example": "SMART_ID"
+        },
+        "psuData": {
+          "$ref": "#/definitions/psuDataObject"
+        }
+      },
+      "type": "object",
+      "required": [
+        "scope",
+        "clientID",
+        "redirectUri",
+        "authenticationMethodId"
+      ]
+    },
+    "decoupledUpdateBankIDBody": {
+      "description": "Decoupled authorization update request body object.",
+      "properties": {
+        "psuData" : {
+          "properties" : {
+            "bankID" : { 
+              "type" : "string", 
+              "format" : "number" 
+            }
+          },
+          "required" : [ "bankID" ],
+          "type" : "object"
+        }
+      },
+      "type": "object",
+      "required" : [ "psuData" ]
+    }
+  },
+  "host": "psd2.api.swedbank.com:443",
+  "info": {
+    "contact": {
+      "email": "openbanking@swedbank.com"
+    },
+    "description": "This endpoint is used to initiate OAuth2.0 defined authentication flow to generate OAuth2.0 token in decoupled approach.",
+    "license": {
+      "name": "See Developer Documentation",
+      "url": "https://online.swedbank.se/ConditionsEarchive/download?bankid=1111&id=WEBDOC-PRODE24296774"
+    },
+    "title": "PSD2 Authorization Decoupled API",
+    "version": "3.0.0"
+  },
+  "parameters": {
+    "client_id": {
+      "description": "API Key (Client ID) from Swedbank developer portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "client_id",
+      "required": true,
+      "type": "string"
+    },
+    "TPP-Redirect-Preferred": {
+      "description": "This is optional header, if specified and set to \"false\", it indicates that TPP is expecting to read SCA methods supported in decoupled approach. If not specified or specified and set to \"true\", it indicates that TPP is expecting to read SCA methods supported in redirect approach.",
+      "in": "header",
+      "name": "TPP-Redirect-Preferred",
+      "required": false,
+      "type": "boolean",
+      "default": "true"
+    },
+    "bic": {
+      "description": "Bank Identifier Code. Mandatory, unless country specific URL is being used to call API.",
+      "enum": [
+        "SANDEE2X",
+        "SANDLT22",
+        "SANDLV22",
+        "SANDSESS",
+        "SWEDSESS",
+        "HABAEE2X",
+        "HABALT22",
+        "HABALV22"
+      ],
+      "in": "query",
+      "name": "bic",
+      "required": false,
+      "type": "string"
+    },
+    "bicSE": {
+      "description": "Bank Identifier Code. Mandatory, unless country specific URL is being used to call API.",
+      "enum": [
+        "SANDSESS",
+        "SWEDSESS"
+      ],
+      "in": "query",
+      "name": "bic",
+      "required": false,
+      "type": "string"
+    },
+    "state": {
+      "description": "OAuth2.0 standart defined 'state' parameter.",
+      "in": "query",
+      "name": "state",
+      "required": false,
+      "type": "string"
+    },
+    "PSU-ID": {
+      "description": "For Baltic countries, this is a number used for authentication during login process to the internet bank. In Sweden, this refers to a Swedish personal number (Swedish national identification number).",
+      "in": "header",
+      "name": "PSU-ID",
+      "required": true,
+      "type": "string"
+    },
+    "PSU-CORPORATE-ID": {
+      "description": "This is the corporate identification number or person identification number. It is used to specify the entity whose accounts the user is accessing, based on the disposition rights outlined in their internet banking agreements.",
+      "in": "header",
+      "name": "PSU-CORPORATE-ID",
+      "required": false,
+      "type": "string"
+    },
+    "Date": {
+      "description": "Standard HTTP header defines the date and time at which the message was originated (in 'HTTP-date' format as defined by RFC 7231 Date/Time Formats, for example, 'Mon, 01 Apr 2019 15:15:01GMT').",
+      "format": "date-time-rfc1123",
+      "in": "header",
+      "name": "Date",
+      "required": true,
+      "type": "string"
+    },
+    "X-Request-ID": {
+      "description": "ID of the request determined by the initiating party. It must be unique for each request, used to identify the specific request in support processes.",
+      "format": "UUID",
+      "in": "header",
+      "name": "X-Request-ID",
+      "required": true,
+      "type": "string"
+    },
+    "authorizeID": {
+      "description": "ID of authorize resource.",
+      "in": "path",
+      "name": "authorizeID",
+      "required": true,
+      "type": "string"
+    },
+    "Qr-Code-Required": {
+      "description": "This is optional header. By default, it is set to \"false\", indicating that device currently used by the user matches the Bank ID device. If specified and set to \"true\", indicates that device currently used by the user does not match the Bank ID device. Relevant in Sweden only.",
+      "in": "header",
+      "name": "Qr-Code-Required",
+      "required": false,
+      "type": "boolean",
+      "default": "false"
+    },
+    "requestDecoupledOAuth": {
+      "description": "Decoupled authorization request body object",
+      "in": "body",
+      "name": "body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/decoupledAuthorizeInitiationBody"
+      }
+    },
+    "decoupledUpdateBankID": {
+      "description": "",
+      "in": "body",
+      "name": "body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/decoupledUpdateBankIDBody"
+      }
+    }
+  },
+  "responses": {
+    "getAvailableAuthenticationMethods_200": {
+      "description": "Body of the JSON response with a list of available authentication methods",
+      "schema": {
+        "properties": {
+          "authenticationMethods": {
+            "description": "List of available SCA methods.",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/availableAuthenticationMethodDetails"
+            }
+          }
+        },
+        "type": "object",
+        "required": [
+          "authenticationMethods"
+        ]
+      },
+      "examples": {
+        "application/json": {
+          "authenticationMethods": [
+            {
+              "authenticationMethodId": "MOBILE_ID",
+              "authenticationType": "Mobile BankID"
+            }
+          ]
+        }
+      }
+    },
+    "getAvailableBankIds_200": {
+      "description": "Body of the JSON response with available bank ids",
+      "schema": {
+        "properties": {
+          "availableBanks": {
+            "description": "List of available banks",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/availableBankDetails"
+            }
+          }
+        },
+        "type": "object",
+        "required": [
+          "availableBanks"
+        ]
+      },
+      "examples": {
+        "application/json": {
+          "availableBanks": [
+            {
+              "bankID": "11111",
+              "name": "Available Bank Name"
+            }
+          ]
+        }
+      }
+    },
+    "getDecoupledAuthorize_200": {
+      "description": "Body of the JSON response with SCA status and authorization code",
+      "schema": {
+        "properties": {
+          "scaStatus": {
+            "description": "Displays the current state of SCA routine\n\n \"received\" -  a decoupled authorize resource has been created. \n\n \"started\" - SCA routine has been started.\n\n \"finalised\" - SCA routine has been successfully completed. \n\n \"failed\" - SCA routine failed; for instance, PSU cancelled authorization in SCA app or session timed out.",
+            "type": "string",
+            "enum": [
+              "received",
+              "started",
+              "finalised",
+              "failed"
+            ]
+          },
+          "tppMessages": {
+            "description": "It will be returned if the SCA routine fails or if the user has engagement in several banks, but the 'bankId' parameter was omitted in the body of the POST '/authorize-decoupled' request. In the latter case, TPP should initiate a PUT '/authorize-decoupled/authorize/{authorizeID}' request to specify the 'bankId'.",
+            "properties": {
+                "category": {
+                  "type": "string",
+                  "enum": ["ERROR"],
+                  "example": "ERROR"
+                },
+                "code": {
+                  "type": "string",
+                  "example": "MISSING_BANK_ID"
+                },
+                "text": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "example": "User must select bank"
+                }
+            },
+            "required": [
+              "category",
+              "code"
+            ],
+            "type": "object"
+          },
+          "authorizationCode": {
+            "description": "One-time token to be exchanged for an access token in POST '/token' request. Returned if the SCA routine was completed successfully and 'bankId' was provided with POST '/authorize-decouple' request or if it is not required.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scaStatus"
+        ]
+      },
+      "examples": {
+        "application/json": {
+          "scaStatus": "started"
+        },
+        "application/whenAuthorizeCompletedJson": {
+          "scaStatus": "started",
+          "authorizationCode": "{accessCode}"
+        }
+      }
+    },
+    "getDecoupledAuthorizeUpdate_200": {
+      "description": "Body of the JSON response with SCA status and authorization code",
+      "schema": {
+        "properties": {
+          "scaStatus": {
+            "description": "Displays the current state of SCA routine\n\n \"received\" -  a decoupled authorize resource has been created. \n\n \"started\" - SCA routine has been started.\n\n \"finalised\" - SCA routine has been successfully completed. \n\n \"failed\" - SCA routine failed; for instance, PSU cancelled authorization in SCA app or session timed out.",
+            "type": "string",
+            "enum": [
+              "received",
+              "started",
+              "finalised",
+              "failed"
+            ]
+          },
+          "tppMessages": {
+            "description": "It will be returned if the SCA routine fails. For instance, if the user does not have an engagement in the bank whose 'bankId' was provided.",
+            "properties": {
+                "category": {
+                  "type": "string",
+                  "enum": ["ERROR"],
+                  "example": "ERROR"
+                },
+                "code": {
+                  "type": "string",
+                  "example": "VERIFICATION_FAILED"
+                },
+                "text": {
+                  "type": "string",
+                  "maxLength": 512,
+                  "example": "Wrong PSU-ID and/or PSU-CORPORATE-ID and/or BANK-ID"
+                }
+            },
+            "required": [
+              "category",
+              "code"
+            ],
+            "type": "object"
+          },
+          "authorizationCode": {
+            "description": "One-time token to be exchanged for an access token in POST '/token' request. Returned if the SCA routine was completed successfully and the user has engagement in the bank whose 'bankId' was provided.",
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scaStatus"
+        ]
+      },
+      "examples": {
+        "application/json": {
+          "scaStatus": "started"
+        },
+        "application/whenAuthorizeCompletedJson": {
+          "scaStatus": "started",
+          "authorizationCode": "{accessCode}"
+        }
+      }
+    },
+    "response_201": {
+      "description": "Authorize resource created",
+      "schema": {
+        "properties": {
+          "authorizeId": {
+            "description": "ID of authorize resource",
+            "type": "string",
+            "pattern": "[a-zA-Z0-9/?:().,'+ -]",
+            "example": "1234-wertiq-983"
+          },
+          "chosenScaMethod": {
+            "$ref": "#/definitions/authenticationObject"
+          },
+          "challengeData": {
+            "description": "Returned when challenge data is needed for SCA. ",
+            "properties": {
+              "code": {
+                "description": "In Baltic countries – always returned. Challenge code, displayed in SCA application used by the user. TPP should present it to PSU for informational purposes. ",
+                "type": "string",
+                "example": "3748"
+              },
+              "autoStartToken": {
+                "description": "Returned only in Sweden and only if 'Qr-Code-Required' header was omitted or if it's value was set to \"false\". TPP should use the autoStartToken to launch the Mobile BankID application on the device used by the user to confirm authorization. For more information about Mobile BankID integration, refer to Mobile BankId integration guidelines.",
+                "type": "string",
+                "example": "a4904c4c-3bb4-4e3f-8ac3-0e950e529e5f"
+              },
+              "imageLink": {
+                "description": "Returned only in Sweden and only if 'Qr-Code-Required' header was specified and if it's value was set to \"true\". It's a steering link that would return QR code image in PNG format.",
+                "type": "string",
+                "example": "v5/authorize-image/3543ad25sdf543"
+              }
+            },
+            "type": "object"
+          },
+          "psuMessage": {
+            "description": "Text to be displayed to the PSU.",
+            "type": "string",
+            "maxLength": 512,
+            "example": "Login via ${TPP_NAME}"
+          },
+          "_links": {
+            "description": "A list of short-lived steering links to be used by TPP.\n\nTypes of links presented in this response:\n\n- \"scaStatus\" - link to retrieve the scaStatus of the corresponding authorize resource.",
+            "properties": {
+              "scaStatus": {
+                "$ref": "#/definitions/link"
+              }
+            }
+          }
+        },
+        "required": [
+          "authorizeId",
+          "chosenScaMethod",
+          "psuMessage",
+          "_links"
+        ],
+        "type": "object"
+      }
+    },
+    "authorizationImage_200": {
+      "description": "QR code image in PNG format to be displayed for a user.",
+      "schema": {
+        "type": "file"
+      }
+    },
+    "Error_400": {
+      "description": "Bad request",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "SCHEMA_INVALID",
+              "text": "JSON schema validation failure: $.authenticationMethodId: is missing but it is required"
+            }
+          ]
+        }
+      }
+    },
+    "Error_403": {
+      "description": "Failed authorization or chosen login method not allowed",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "SCA_METHOD_INVALID",
+              "text": "Chosen SCA method invalid or unsupported"
+            }
+          ]
+        }
+      }
+    },
+    "Error_404": {
+      "description": "Resource not found",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "BACKEND_ERROR",
+              "text": "Resource not found for authorize id={{$authorizeID}}"
+            }
+          ]
+        }
+      }
+    },
+    "Error_405": {
+      "description": "Not allowed HTTP method",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "SERVICE_INVALID",
+              "text": "Got: ${http_method_used} allowed: ${http_method_allowed}"
+            }
+          ]
+        }
+      }
+    },
+	"Error_429": {
+      "description": "Access exceeded - too many requests",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "ACCESS_EXCEEDED",
+              "text": "Reached parallel requests limit: (5)"
+            }
+          ]
+        }
+      }
+    },
+    "Error_500": {
+      "description": "Internal Server Error",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "INTERNAL_ERROR",
+              "text": "Internal Error"
+            }
+          ]
+        }
+      }
+    },
+    "Error_503": {
+      "description": "Service Temporary Unavailable",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "TEMPORARY_UNAVAILABLE",
+              "text": "Planned system maintenance ongoing"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "paths": {
+    "/v5/authorize-decoupled": {
+      "post": {
+        "description": "This endpoint will create authorization resource which will have to be approved by the PSU using Strong Customer Authentication (SCA) application.\n\nIn Sweden, it is possible to receive an HTTP 400 error response with error text \"Other login session is ongoing\" for various reasons (such as when the PSU recently canceled the SCA process in the Mobile BankID application). In case of this error, a POST '/v5/authorize-decoupled' request should be repeated to terminate previous signing session and initiate a new one.",
+        "operationId": "DecoupledOAuth2authorizeSecure",
+        "consumes" : [
+          "application/json"
+        ],
+        "parameters": [
+		{
+            "$ref": "#/parameters/client_id"
+          },
+          {
+            "$ref": "#/parameters/bic"
+          },
+          {
+            "$ref": "#/parameters/PSU-ID"
+          },
+          {
+            "$ref": "#/parameters/PSU-CORPORATE-ID"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          },
+          {
+            "$ref": "#/parameters/requestDecoupledOAuth"
+          },
+          {
+            "$ref": "#/parameters/Qr-Code-Required"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/response_201"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Initiate decoupled authentication flow",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/v5/authorize-decoupled/authorize/{authorizeID}": {
+      "get": {
+        "description": "Allows to read status of an ongoing decoupled authorization process and retrieve an Authorization Code. This endpoint URL is obtained via steering links.",
+        "operationId": "getDecoupledAuthorizeAuthorizationCode",
+        "parameters": [
+          {
+            "$ref": "#/parameters/bic"
+          },
+          {
+            "$ref": "#/parameters/client_id"
+          },
+          {
+            "$ref": "#/parameters/authorizeID"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getDecoupledAuthorize_200"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+   	  	  "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Read decoupled authorize state and retrieve an Authorization Code",
+        "tags": [
+          "authorization"
+        ]
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Allows to update authorize resource with specified 'bankId' and retrieve an Authorization Code. Relevant in Sweden only.",
+        "operationId": "updateDecoupledAuthorizeAuthorization",
+        "parameters": [
+          {
+            "$ref": "#/parameters/bic"
+          },
+          {
+            "$ref": "#/parameters/client_id"
+          },
+          {
+            "$ref": "#/parameters/authorizeID"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          },
+          {
+            "$ref": "#/parameters/decoupledUpdateBankID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getDecoupledAuthorizeUpdate_200"
+          },
+          "400": {
+              "$ref": "#/responses/Error_400"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+		      "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Update decoupled authorize resource and retrieve an Authorization Code",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/available-bankids": {
+      "get": {
+        "description": "Allows to read available bank IDs of Saving Banks and Swedbank. Relevant in Sweden only.",
+        "operationId": "getAvailableBankIds",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getAvailableBankIds_200"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          }
+        },
+        "summary": "Read available bank IDs of Saving Banks and Swedbank",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/v5/available-authentication-methods": {
+      "get": {
+        "description": "Allows to read a list of supported authentication methods.",
+        "operationId": "getAvailableAuthenticationMethods",
+        "parameters": [
+          {
+            "$ref": "#/parameters/bic"
+          },
+          {
+            "$ref": "#/parameters/TPP-Redirect-Preferred"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getAvailableAuthenticationMethods_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Read available authentication methods",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/authorize-image/{authorizeID}": {
+      "get": {
+        "description": "Allows to retrieve QR code image in PNG format that should be used for authentication in Mobile BankId application. Relevant in Sweden only. This endpoint URL is obtained via steering links.",
+        "operationId": "getAuthorizationImage",
+        "parameters": [
+          {
+            "$ref": "#/parameters/bicSE"
+          },
+          {
+            "$ref": "#/parameters/authorizeID"
+          },
+          {
+            "$ref": "#/parameters/client_id"
+          }
+        ],
+        "produces": [
+          "image/png",
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/authorizationImage_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+		      "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Fetches image that contains QR code.",
+        "tags": [
+          "authorization"
+        ]
+      }
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "tags": [
+    {
+      "description": "",
+      "name": "authorization"
+    }
+  ]
+}

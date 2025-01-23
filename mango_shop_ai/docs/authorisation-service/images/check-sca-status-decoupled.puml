@@ -1,0 +1,11 @@
+@startuml check-sca-status-decoupled
+loop while scaStatus not changed
+    opt only if Qr-Code-Required header with value true has been provided.
+        TPP->API: GET/ Request / Request QR Code\n(psd2/authorize-image/{authorizeID})
+        TPP<--API: 200/ Return QR code image in PNG format
+        TPP->PSU: Display received QR code
+    end
+    TPP->API: GET/ Request //scaStatus//
+    TPP<--API: 200/ Return //scaStatus// \n(//finalised//)
+end
+@enduml

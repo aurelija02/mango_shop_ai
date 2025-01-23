@@ -1,0 +1,186 @@
+{
+  "basePath": "/v5",
+  "definitions": {
+    "okResponse" : {
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [ "OK" ]
+        }
+      },
+      "type": "object"
+    },
+    "errorMessage": {
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "ERROR"
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ResponseError": {
+      "properties": {
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessage"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "host": "psd2.api.swedbank.com:443",
+  "info": {
+    "contact": {
+      "email": "openbanking@swedbank.com"
+    },
+    "description": "Used to check API status – if it's available. As the API covers multiple banks in different countries, it is required to use a country-specific URL or to specify the BIC query parameter (check the Developer Documentation for more details). Please note that Swedbank Sweden and cooperating Savings Banks share the same BIC/country code.",
+    "license": {
+      "name": "See Developer Documentation",
+      "url": "https://online.swedbank.se/ConditionsEarchive/download?bankid=1111&id=WEBDOC-PRODE24296774"
+    },
+    "title": "Troubleshoot Services API",
+    "version": "3.0.0"
+  },
+  "parameters": {
+    "app-id": {
+      "description": "API Key (Client ID) from Swedbank developer portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "app-id",
+      "required": false,
+      "type": "string"
+    },
+    "bic": {
+      "description": "Bank Identifier Code. Mandatory, unless country specific URL is being used to call API.",
+      "enum": [
+        "SWEDSESS",
+        "HABAEE2X",
+        "HABALT22",
+        "HABALV22"
+      ],
+      "in": "query",
+      "name": "bic",
+      "required": false,
+      "type": "string"
+    }
+  },
+  "responses": {
+    "ping_200": {
+      "description": "OK",
+      "schema": {
+        "$ref": "#/definitions/okResponse"
+      },
+      "headers": {
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "status": "OK"
+        }
+      }
+    },
+    "Error_429": {
+      "description": "Access exceeded - too many requests",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "ACCESS_EXCEEDED",
+              "text": "Reached parallel requests limit: (10)"
+            }
+          ]
+        }
+      }
+    },
+    "Error_503": {
+      "description": "Service Temporary Unavailable",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "TEMPORARY_UNAVAILABLE",
+              "text": "Planned system maintenance ongoing"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "paths": {
+    "/ping": {
+      "get": {
+        "description": "Ping endpoint is used to check if the API is available for usage. If all APIs are available, it will return a HTTP 200 response with 'status: OK'.\nThere are a few errors that can be thrown:\n- ACCESS_EXCEEDED: This error occurs if this endpoint is called too frequently (after call, it shouldn't be called in less than 5 seconds).\n- TEMPORARY_UNAVAILABLE: This error occurs if the API is in the maintenance phase.",
+        "operationId": "checkAvailability",
+        "parameters": [
+          {
+            "$ref": "#/parameters/bic"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/ping_200"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Ping",
+        "tags": [
+          "ping"
+        ]
+      }
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "tags": [
+    {
+      "description": "Technical endpoint to check if certain country-specific API endpoints are available.",
+      "name": "ping"
+    }
+  ]
+}

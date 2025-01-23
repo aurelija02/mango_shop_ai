@@ -1,0 +1,3 @@
+### User authentication method
+PSU authentication method will be provided with `/token` endpoint response in headers. Information about authentication method might be useful for some flows optimization on TPP side (e.g. Recipient authorisation with extended Mobile BankID in Swedbank Sweden).
+For SCA methods available in Swedbank API check chapter [Authentication procedures issued by Swedbank to users](#authentication-procedures-issued-by-swedbank-to-users).

@@ -1,0 +1,31 @@
+@startuml decoupled-user-authentication-oauth2-sd
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam ParticipantPadding 30
+
+title User authentication diagram using OAuth 2.0 (decoupled approach)
+
+Actor User as PSU
+participant TPP
+participant API
+
+autonumber
+TPP->API: POST /authorize-decoupled (optional //bankId//)
+TPP<--API: 201 Created \n //{authorizeId}, chosenScaMethod, psuMessage, _links//
+
+== start user authentication ==
+autonumber 3.1
+!include authorisation-service/images/check-sca-status-decoupled.puml
+== end user authentication ==
+
+autonumber 4
+
+group if //bankId// omitted
+    TPP->API: PUT /authorize-decoupled/authorize/{authorizeID} //bankId//
+    TPP<--API:  200 OK \n //authorizationCode//
+end
+
+!include authorisation-service/images/token-exchange.puml
+
+@enduml

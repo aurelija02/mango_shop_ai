@@ -1,0 +1,23 @@
+@startuml redirect-user-authentication-flow2
+
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam ParticipantPadding 30
+
+title User authentication diagram using OAuth 2.0 (redirect approach)
+
+
+|TPP|
+start
+:select Swedbank;
+|#LightGrey|Swedbank|
+-> redirect;
+:login;
+:select customer profile;
+|TPP|
+-> redirect;
+:app;
+
+stop
+@enduml

@@ -1,0 +1,334 @@
+{
+  "basePath": "/psd2",
+  "definitions": {
+    "tokenResponse": {
+      "properties": {
+        "access_token": {
+          "description": "Access token to be used with further API calls.",
+          "type": "string"
+        },
+        "token_type": {
+          "description": "Type of the access token, must be included with access token in further API calls.",
+          "type": "string",
+          "enum": [
+            "Bearer"
+          ]
+        },
+        "expires_in": {
+          "description": "Unix time represented in seconds.",
+          "type": "number"
+        },
+        "refresh_token": {
+          "description": "Refresh token to be used to refresh an expired access token.",
+          "type": "string"
+        },
+        "scope": {
+          "description": "List of scopes that represent access granted by the user.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "errorMessage": {
+      "description": "Messages to the TPP on operational issues.",
+      "properties": {
+        "category": {
+          "description": "Category of the TPP message category",
+          "type": "string",
+          "enum": [
+            "ERROR"
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "category",
+        "code"
+      ],
+      "type": "object"
+    },
+    "ResponseError": {
+      "properties": {
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessage"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "host": "psd2.api.swedbank.com:443",
+  "info": {
+    "contact": {
+      "email": "openbanking@swedbank.com"
+    },
+    "description": "This endpoint is used to:\n\n- exchange authorization code to OAuth2.0 access and refresh tokens. \n\n- exchange refresh token to a new OAuth2.0 access token and new refresh token (after access token expires).",
+    "license": {
+      "name": "See Developer Documentation",
+      "url": "https://online.swedbank.se/ConditionsEarchive/download?bankid=1111&id=WEBDOC-PRODE24296774"
+    },
+    "title": "PSD2 Token API",
+    "version": "2.1.0"
+  },
+  "parameters": {
+    "client_id": {
+      "description": "API Key (Client ID) from Swedbank developer portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "client_id",
+      "required": true,
+      "type": "string"
+    },
+    "client_secret": {
+      "description": "Client Secret (Shared secret) from Swedbank developer portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "client_secret",
+      "required": true,
+      "type": "string"
+    },
+    "code": {
+      "description": "Part of OAuth2.0 protocol. 'access_code' returned to specified redirect_uri in redirect authorization flow or  'authorizationCode' returned in decoupled authorization flow. Required when grant_type is 'authorization_code'.",
+      "format": "UUID",
+      "in": "query",
+      "name": "code",
+      "required": false,
+      "type": "string"
+    },
+    "redirect_uri": {
+      "description": "OAuth2.0 standard defined parameter. It must be declared in Swedbank developer portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "redirect_uri",
+      "required": false,
+      "type": "string"
+    },
+    "Date": {
+      "description": "Standard HTTP header defines the date and time at which the message was originated (in 'HTTP-date' format as defined by RFC 7231 Date/Time Formats, for example, 'Mon, 01 Apr 2019 15:15:01GMT').",
+      "format": "date-time-rfc1123",
+      "in": "header",
+      "name": "Date",
+      "required": false,
+      "type": "string"
+    },
+    "X-Request-ID": {
+      "description": "ID of the request determined by the initiating party. It must be unique for each request, used to identify the specific request in support processes.",
+      "format": "UUID",
+      "in": "header",
+      "name": "X-Request-ID",
+      "required": false,
+      "type": "string"
+    },
+    "grant_type": {
+      "description": "Part of OAuth2.0 protocol.  \n- 'authorization_code' - in a process of a new authentication flow. \n- 'refresh_token' - to refresh an existing access token after it expires.",
+      "in": "query",
+      "name": "grant_type",
+      "required": true,
+      "type": "string",
+      "enum": [
+        "authorization_code",
+        "refresh_token"
+      ]
+    },
+    "refresh_token": {
+      "description": "Part of OAuth2.0 protocol. Used to get a renewed access token. Required when grant_type is 'refresh_token'.",
+      "in": "query",
+      "name": "refresh_token",
+      "required": false,
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "responses": {
+    "tokenExchange_200": {
+      "description": "Access token acquired",
+      "schema": {
+        "$ref": "#/definitions/tokenResponse"
+      },
+      "headers" : {
+        "login-method" : {
+          "type" : "string",
+          "enum" : [ "BANKID_CARD", "CERTIFICATE", "MOBILE_ID", "PIN_CALCULATOR", "PIN_CALCULATOR_CORP", "SIMPLE_ID", "SMART_ID", "EPARAKSTS_MOBILE" ],
+          "description" : "Provides information about login method that was used in login flow."
+        },
+        "login-method-extended" : {
+          "type" : "boolean",
+          "enum" : [ true, false ],
+          "description" : "Provides additional information if Mobile BankID was used as a login method. \"true\" means that Mobile BankId is extended and can be used to authorise adding the new recipient. \"false\" means that Mobile BankId is not extended and extention will be required to add a new recipient. However, payments which do not require signing the new recipient, can be authorised."
+        }
+      },
+      "examples": {
+        "application/json": {
+          "access_token": "a88274bd-bf32-4f3d-b079-0c019f2fb373-1705308275",
+          "token_type": "Bearer",
+          "expires_in": 3600,
+          "refresh_token": "6ce1a106-6a2f-4885-a797-52ae71e72ce4",
+          "scope": "PSD2 PSD2account_list"
+        }
+      }
+    },
+    "Error_400": {
+      "description": "Bad request",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      }
+    },
+    "Error_405": {
+      "description": "Not allowed HTTP method",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "SERVICE_INVALID",
+              "text": "Got: ${http_method_used} allowed: ${http_method_allowed}"
+            }
+          ]
+        }
+      }
+    },
+    "Error_429": {
+      "description": "Access exceeded - too many requests",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "ACCESS_EXCEEDED",
+              "text": "Account plan limit exceeded. Reason: Not Set|l7a72cf3b8389b4db889bc50689494e15a|a89cde34-8ba7-471d-8686-2548f5e4c1dd|quota?failed"
+            }
+          ]
+        }
+      }
+    },
+    "Error_500": {
+      "description": "Internal Server Error",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "INTERNAL_ERROR",
+              "text": "Internal Error"
+            }
+          ]
+        }
+      }
+    },
+    "Error_503": {
+      "description": "Service Temporary Unavailable",
+      "schema": {
+        "$ref": "#/definitions/ResponseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "TEMPORARY_UNAVAILABLE",
+              "text": "Planned system maintenance ongoing"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "paths": {
+    "/token": {
+      "post": {
+        "description": "Used to retrieve a valid OAuth2 access token to be used with further API requests.\n\nNote: Only one valid access token is allowed per user profile, bank and app-id. Creation of a new access token for the same user profile within the same bank with the same app ID would invalidate the previous access token. TPP should map the user profile with the token on their side.",
+        "operationId": "OAuth2token",
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/client_id"
+          },
+          {
+            "$ref": "#/parameters/client_secret"
+          },
+          {
+            "$ref": "#/parameters/grant_type"
+          },
+          {
+            "$ref": "#/parameters/redirect_uri"
+          },
+          {
+            "$ref": "#/parameters/code"
+          },
+          {
+            "$ref": "#/parameters/refresh_token"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/tokenExchange_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Request for Access and Refresh tokens",
+        "tags": [
+          "token"
+        ]
+      }
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "tags": [
+    {
+      "description": "",
+      "name": "token"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+@startuml authorisation-state-diagram
+
+skinparam monochrome true
+skinparam shadowing false
+
+title Authorisation state diagram
+
+[*] --> received: start authorisation 
+received --> started : start 
+started --> finalised : OK 
+started --> failed : expired or canceled 
+received --> failed : issues 
+failed --> [*] : final status 
+finalised --> [*] : final status 
+
+@enduml

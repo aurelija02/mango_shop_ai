@@ -1,0 +1,8 @@
+@startuml
+
+'Request OAuth 2.0 token
+TPP->API:  POST /token (//client_id, client_secret, redirect_uri//) 
+'OAuth 2.0 access and refresh token
+TPP<--API: 200 OK \n //access_token, refresh_token, login-method//
+
+@enduml

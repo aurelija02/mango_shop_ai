@@ -1,0 +1,11 @@
+@startuml qr-code-sd
+
+opt only if Qr-Code-Required header with value true has been provided.
+    loop until QR code is read
+        TPP->API: GET/ Request / Request QR Code\n(psd2/authorize-image/{authorizeID})
+        TPP<--API: 200/ Return QR code image in PNG format
+        TPP->PSU: Display received QR code
+    end
+end
+
+@enduml

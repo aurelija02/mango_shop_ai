@@ -1,0 +1,32 @@
+@startuml decoupled-user-authentication-oauth2-sd
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam ParticipantPadding 30
+
+title User authentication diagram using OAuth 2.0 (Decoupled Approach)
+
+Actor User as PSU
+participant Partner
+participant API
+
+autonumber
+Partner->API: POST /authorize-decoupled
+Partner<--API: 201 Created \n //{authorizeId}, chosenScaMethod, psuMessage, _links//
+
+== start user authentication ==
+autonumber 3.1
+loop while scaStatus not changed
+    Partner->API: GET /authorize/decoupled/authorize/{authorizeID}
+    Partner<--API: 200/ Return //scaStatus// \n(//finalise//)
+end
+== end user authentication ==
+
+autonumber 4
+
+'Request OAuth 2.0 token
+Partner->API:  POST /token (//client_id, client_secret, redirect_uri//) 
+'OAuth 2.0 access and refresh token
+Partner<--API: 200 OK \n //access_token, refresh_token, login-method//
+
+@enduml
