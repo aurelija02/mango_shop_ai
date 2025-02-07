@@ -1,0 +1,1932 @@
+{
+  "basePath": "/sandbox/v5",
+  "definitions": {
+    "link": {
+      "properties": {
+        "href": {
+          "description": "URL path to the resource",
+          "type": "string",
+          "pattern": "^/sandbox/v5/"
+        }
+      },
+      "required": [
+        "href"
+      ],
+      "type": "object"
+    },
+    "linkPSU": {
+      "properties": {
+        "href": {
+          "description": "Link to page where PSU has to be redirected for SCA process",
+          "type": "string"
+        }
+      },
+      "required": [
+        "href"
+      ],
+      "type": "object"
+    },
+    "paymentInitiationBulkElement_json": {
+      "description": "Details of a single payment.",
+      "properties": {
+        "instructedAmount": {
+          "properties": {
+            "currency": {
+              "description": "ISO 4217 Alpha 3 currency code.",
+              "type": "string",
+              "pattern": "^[A-Z]{3}$",
+              "example": "EUR"
+            },
+            "amount": {
+              "description": "The amount given with fractional digits, where fractions must be compliant to the currency definition. Up to 14 significant figures. Negative amounts are signed by minus. The decimal separator is a dot. \n\nExample: Valid representations for EUR with up to two decimals are: \n\n- 1056 \n\n- 5768.2 \n\n- -1.50 \n\n- 5877.78",
+              "type": "string",
+              "pattern": "^[0-9]{1,14}(\\.[0-9]{1,2})?$",
+              "example": "5877.78"
+            }
+          },
+          "required": [
+            "currency",
+            "amount"
+          ],
+          "type": "object"
+        },
+        "creditorAccount": {
+          "$ref": "#/definitions/accountReferenceSEPA"
+        },
+        "creditorName": {
+          "description": "Beneficiary name.",
+          "type": "string",
+          "maxLength": 70,
+          "pattern": "^[a-zA-Z0-9/?:().,'+ -]{1,70}$",
+          "example": "JOHN DOEW"
+        },
+        "creditorAgent": {
+          "description": "Beneficiary bank BIC.",
+          "type": "string",
+          "maxLength": 70,
+          "pattern": "^[A-Z]{6,6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3,3}){0,1}$",
+          "example": "AAAADEBBXXX"
+        },
+        "endToEndIdentification": {
+          "description": "Recommended to be unique for better identification of the transaction.",
+          "maxLength": 35,
+          "type": "string"
+        },
+        "remittanceInformationUnstructured": {
+          "description": "Creditor reference. In Latvia and Lithuania, either structured or unstructured information is allowed, but not both. In Estonia, both remittance information fields are allowed.",
+          "type": "string",
+          "maxLength": 140,
+          "pattern": "^[a-zA-Z0-9/?:().,'+ -]{1,140}$",
+          "example": "Ref Number Merchant"
+        },
+        "remittanceInformationStructured": {
+          "description": "Creditor reference. In Latvia and Lithuania, either structured or unstructured information is allowed, but not both. In Estonia, both remittance information fields are allowed.",
+          "properties": {
+            "reference": {
+              "type": "string",
+              "maxLength": 35,
+              "pattern": "^[a-zA-Z0-9/?:().,'+ -]{1,140}$",
+              "example": "ABC 070"
+            },
+            "referenceType": {
+              "type": "string",
+              "maxLength": 35,
+              "pattern": "^[a-zA-Z0-9/?:().,'+ -]{1,35}$",
+              "example": "55"
+            },
+            "referenceIssuer": {
+              "type": "string",
+              "maxLength": 35,
+              "pattern": "^[a-zA-Z0-9/?:().,'+ -]{1,35}$",
+              "example": "55"
+            }
+          },
+          "required": [
+            "reference",
+            "referenceType"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "instructedAmount",
+        "creditorAccount",
+        "creditorName"
+      ],
+      "type": "object"
+    },
+    "debtorAccountReferenceSEPA": {
+      "description": "Optional in redirect SCA approach. Mandatory in decoupled SCA approach.",
+      "properties": {
+        "iban": {
+          "description": "IBAN of an account",
+          "type": "string",
+          "pattern": "^[A-Z]{2,2}[0-9]{2,2}[a-zA-Z0-9]{1,30}$",
+          "example": "LT00000000000000000000"
+        }
+      },
+      "type": "object"
+    },
+    "accountReferenceSEPA": {
+      "properties": {
+        "iban": {
+          "description": "IBAN of an account",
+          "type": "string",
+          "pattern": "^[A-Z]{2,2}[0-9]{2,2}[a-zA-Z0-9]{1,30}$",
+          "example": "LT00000000000000000000"
+        }
+      },
+      "type": "object"
+    },
+    "debtorIdentificationReference": {
+      "properties": {
+        "organisationIdentification": {
+          "description": "Company's identification number.",
+          "type": "string"
+        },
+        "privateIdentification": {
+          "description": "Private person's identification number.",
+          "type": "string"
+        },
+        "schemeName": {
+          "description": "Debtor's identification type.\nAcceptable codes for organisation identification scheme for Domestic Payments:\nEstonia: \"COID, CUST, TXID\"\nLithuania: \"COID\",\nLatvia \"TXID\"\nAcceptable codes for private identification scheme for Domestic Payments:\nEstonia: \"NIDN, CUST, TXID\",\nLithuania: \"NIDN\",\nLatvia: \"NIDN\".",
+          "type": "string",
+          "enum": [
+            "COID",
+            "CUST",
+            "TXID",
+            "NIDN"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "authenticationObject": {
+      "description": "Identifies authentication method selected by PSU. TPP should present it to PSU for informational purposes.",
+      "properties": {
+        "authenticationType": {
+          "description": "Type of the authentication method a.k.a friendly name.",
+          "type": "string",
+          "example": "Smart-Id"
+        },
+        "authenticationMethodId": {
+          "description": "An identification of the authentication method.",
+          "type": "string",
+          "example": "SMART_ID"
+        }
+      },
+      "type": "object",
+      "required": [
+        "authenticationType",
+        "authenticationMethodId"
+      ]
+    },
+    "authenticationObjects": {
+      "description": "Authentication methods used by PSU.",
+      "properties": {
+        "authenticationType": {
+          "description": "Type of the authentication method a.k.a friendly name.",
+          "type": "string",
+          "example": "Smart-Id"
+        },
+        "authenticationMethodId": {
+          "description": "An identification of the authentication method.",
+          "type": "string",
+          "example": "SMART_ID"
+        }
+      },
+      "type": "object",
+      "required": [
+        "authenticationType",
+        "authenticationMethodId"
+      ]
+    },
+    "challengeDataObject": {
+      "description": "Returned when challenge data is needed for SCA.",
+      "properties": {
+        "code": {
+          "description": "Challenge code, displayed in SCA application used by the user. TPP should present it to PSU for informational purposes.",
+          "type": "string",
+          "example": "3748"
+        }
+      },
+      "type": "object",
+      "required": [
+        "code"
+      ]
+    },
+    "supportedTransactionStatus": {
+      "description": "Status of the payment's overall life cycle:\n\"ACTC\" - \"AcceptedTechnicalValidation\": Payment has been initiated successfully, indicating that authentication, syntactical and semantic validation were successful.\n\"ACSC\" - \"AcceptedSettlementCompleted\": Payment has been successfully processed and debited, meaning that settlement on the debtor's account has been completed.\n\"ACCP\" - \"AcceptedCustomerProfile\": Payment has been successfully processed and prepared to be debited when the future date becomes the current date. Once the payment is executed, its status changes to ACSC. Relevant for future-dated payments.\n\"ACSP\" - \"AcceptedSettlementInProcess\": All preceding checks, such as technical validation and customer profile, were successful, but payment did not make it before the cut-off time and trading room. Therefore, the payment initiation has been accepted for execution, which means that the payment is being put on hold and will be processed once the trading room is available again.\n\"PATC\" - \"PartiallyAcceptedTechnicalCorrect\": Payment requires countersigning, indicating that the first signature has been applied, but more signatures are still required.\n\"CANC\" - \"Cancelled\": Payment initiation has been cancelled before or during execution.\n\"RJCT\" - \"Rejected\": Payment initiation or individual transaction included in the payment initiation has been rejected.",
+      "type": "string",
+      "enum": [
+        "ACTC",
+        "ACSC",
+        "ACCP",
+        "ACSP",
+        "PATC",
+        "CANC",
+        "RJCT",
+        "PART"
+      ],
+      "example": "ACTC"
+    },
+    "supportedScaStatus": {
+      "description": "Displays the current state of SCA routine:\n\"received\" - data for authorisaton process has been received and authorisation sub-resource has been created.\n\"started\" - SCA routine has been started: In a redirect approach, PSU has followed the scaRedirect URL; in a decoupled approach, PSU started interaction in the SCA app, but hasn't authorized it yet.\n\"finalised\" - SCA routine has been successfully completed.\n\"failed\" - SCA routine failed, something went wrong during the signing process.",
+      "type": "string",
+      "enum": [
+        "received",
+        "started",
+        "finalised",
+        "failed"
+      ],
+      "example": "received"
+    },
+    "bulkPaymentInitiationBodySEPABB": {
+      "description": "Body for a bulk SEPA payment initiation via JSON.",
+      "properties": {
+        "debtorAccount": {
+          "$ref": "#/definitions/debtorAccountReferenceSEPA"
+        },
+        "debtorIdentification": {
+          "$ref": "#/definitions/debtorIdentificationReference"
+        },
+        "payments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/paymentInitiationBulkElement_json"
+          }
+        }
+      },
+      "required": [
+        "payments"
+      ],
+      "type": "object",
+      "example": {
+        "debtorAccount": {
+          "iban": "LT00000000000000000000"
+        },
+        "payments": [
+          {
+            "instructedAmount": {
+              "currency": "EUR",
+              "amount": "12"
+            },
+            "creditorAccount": {
+              "iban": "LT00000000000000000001"
+            },
+            "remittanceInformationStructured": {
+              "reference": "1687622124",
+              "referenceType": "55"
+            }
+          },
+          {
+            "instructedAmount": {
+              "currency": "EUR",
+              "amount": "120"
+            },
+            "creditorAccount": {
+              "iban": "LT00000000000000000002"
+            },
+            "remittanceInformationUnstructured": "Ref Number Merchant"
+          }
+        ]
+      }
+    },
+    "psuDataObject": {
+      "description": "PSU authentication data needed for selected authentication method. Should be provided only when PSU has chosen a new SCA method.",
+      "properties": {
+        "phoneNumber": {
+          "description": "Phone number of the PSU. Must be provided if \"MOBILE_ID\" is chosen as authentication method.",
+          "type": "string"
+        },
+        "personalID": {
+          "description": "Personal number (national identification number) of the PSU. Must be provided if \"SMART_ID\", \"SIMPLE_ID\" or \"EPARAKSTS_MOBILE\" is chosen as authentication method.",
+          "type": "string"
+        }
+      }
+    },
+    "decoupledSCABodyBB": {
+      "description": "Specifies SCA method selected by PSU.",
+      "properties": {
+        "authenticationMethodId": {
+          "description": "Identification of a chosen SCA method.",
+          "type": "string",
+          "example": "SMART_ID"
+        },
+        "psuData": {
+          "$ref": "#/definitions/psuDataObject"
+        }
+      },
+      "type": "object",
+      "required": [
+        "authenticationMethodId"
+      ]
+    },
+    "errorMessage": {
+      "description": "Messages to the TPP on operational issues.",
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "ERROR"
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "category",
+        "code"
+      ],
+      "type": "object"
+    },
+    "responseError": {
+      "properties": {
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessage"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "responseErrorWithTransactionStatus": {
+      "properties": {
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessage"
+          },
+          "type": "array"
+        },
+        "transactionStatus": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "bulkPaymentStatusDetails": {
+      "properties": {
+        "transactionStatus": {
+          "$ref": "#/definitions/supportedTransactionStatus"
+        },
+        "remittanceInformationUnstructured": {
+          "description": "In Latvia and Lithuania either structured or unstructured information is allowed, not both. In Estonia both remittance information fields are allowed.",
+          "type": "string",
+          "maxLength": 140,
+          "pattern": "^[a-zA-Z0-9/?:().,'+ -]{1,140}$",
+          "example": "Ref Number Merchant"
+        },
+        "remittanceInformationStructured": {
+          "description": "In Latvia and Lithuania either structured or unstructured information is allowed, not both. In Estonia both remittance information fields are allowed.",
+          "properties": {
+            "reference": {
+              "type": "string",
+              "maxLength": 35,
+              "pattern": "^[a-zA-Z0-9/?:().,'+ -]{1,140}$",
+              "example": "ABC 070"
+            }
+          }
+        },
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessage"
+          },
+          "type": "array"
+        }
+      },
+        "type": "object"
+    },
+    "paymentResponse_BB_201": {
+      "description": "Body of the response for a successful payment initiation request.",
+      "properties": {
+        "transactionStatus": {
+          "$ref": "#/definitions/supportedTransactionStatus"
+        },
+        "paymentId": {
+          "type": "string",
+          "example": "1234-wertiq-983",
+          "description": "ID of the created bulk payments resource."
+        },
+        "scaMethods": {
+          "description": "Authentication methods used by PSU.\nThis data element is included when SCA (Strong Customer Authentication) is required and TPP has selected decoupled SCA approach ('TPP-Redirect-Preferred' header value in the request was set to \"false\"). TPP should present these methods to PSU for selection.",
+          "type": "string",
+          "example": "SMART_ID"
+        },
+        "chosenScaMethod": {
+          "description": "Identifies authentication method selected by PSU. TPP should present it to PSU for informational purposes.\nThis data element will be contained, if the TPP has chosen decoupled SCA approach over \"TPP-Redirect-Preferred\" header. \nThis method shall be presented towards the PSU for the information purpose by the TPP.",
+          "type": "string",
+          "example": "SMART_ID"
+        },
+        "_links": {
+          "description": "A list of short-lived steering links to be used by TPP.\nTypes of links presented in this response:\n- \"scaRedirect\" - returned in case of redirect SCA approach. TPP should redirect PSU to this link to complete SCA flow in Swedbank UI.\n- \"self\" - link to retrieve the details about the payment resource created by this request.\n\"status\" - link to retrieve the transaction status of the initiated payment.\n- \"scaStatus\" - link to retrieve the scaStatus of the corresponding payment authorisation sub-resource. Returned in case of implicit authorisation flow.\n\"startAuthorisation\" - returned in case of explicit authorisation flow. Should be used by TPP to initiate POST request and start authorisation.\n- \"startAuthorisationWithAuthenticationMethodSelection\" - returned in case of implicit authorisation flow and if decoupled SCA approach is preferred. Should be used by TPP to initiate PUT request to specify SCA method chosen by PSU and start authorisation process.",
+          "properties": {
+            "scaRedirect": {
+              "$ref": "#/definitions/linkPSU"
+            },
+            "status": {
+              "$ref": "#/definitions/link"
+            },
+            "self": {
+              "$ref": "#/definitions/link"
+            },
+            "scaStatus": {
+              "$ref": "#/definitions/link"
+            },
+            "startAuthorisation": {
+              "$ref": "#/definitions/link"
+            },
+            "selectAuthenticationMethod": {
+              "$ref": "#/definitions/link"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "transactionStatus",
+        "paymentId",
+        "_links"
+      ],
+      "type": "object"
+    },
+    "cancelPaymentResponse_200": {
+      "description": "Body of the response for a successful cancelation of initiated payment.",
+      "properties": {
+        "transactionStatus": {
+          "$ref": "#/definitions/supportedTransactionStatus"
+        }
+      },
+      "required": [
+        "transactionStatus"
+      ],
+      "type": "object"
+    }
+  },
+  "host": "psd2.api.swedbank.com:443",
+  "info": {
+    "contact": {
+      "email": "openbanking@swedbank.com",
+      "name": "contact"
+    },
+    "description": "In Baltics, this API is used to create a bulk payments resource which allows to authorize several SEPA payments which are being debited from the same account with a single Strong Customer Authentication (SCA). Payments are initiated on behalf of the Payment Service User (PSU). PSU can be a private customer or a representative of the corporate customer with access to the corporate accounts. This API is accessible to Third-Party Providers holding a Payment Initiation Service Provider (PISP) license.\nEach request requires a valid OAuth 2.0 token, which must be included in the 'Authorization' header of the request.",
+    "license": {
+      "name": "See Developer Documentation",
+      "url": "https://online.swedbank.se/ConditionsEarchive/download?bankid=1111&id=WEBDOC-PRODE24296774"
+    },
+    "title": "Bulk Payments Initiation Services API",
+    "version": "3.0.0"
+  },
+  "parameters": {
+    "Authorization": {
+      "description": "Standard security header. Supported only with OAuth2 token in format 'Bearer ${OAuth2_token}'.",
+      "in": "header",
+      "name": "Authorization",
+      "required": true,
+      "type": "string"
+    },
+    "authorisationID": {
+      "description": "ID of the authorisation sub-resource.",
+      "in": "path",
+      "name": "authorisationID",
+      "required": true,
+      "type": "string"
+    },
+    "Consent-ID": {
+      "description": "ID of the consent which granted access to specified accountID.",
+      "format": "UUID",
+      "in": "header",
+      "name": "Consent-ID",
+      "required": true,
+      "type": "string"
+    },
+    "app-id": {
+      "description": "API Key (Client ID) from Swedbank developer portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "app-id",
+      "required": false,
+      "type": "string"
+    },
+    "Date": {
+      "description": "Standard HTTP header defines the date and time at which the message was originated (in 'HTTP-date' format as defined by RFC 7231 Date/Time Formats, for example, 'Mon, 01 Apr 2019 15:15:01GMT').",
+      "format": "date-time-rfc1123",
+      "in": "header",
+      "name": "Date",
+      "required": true,
+      "type": "string"
+    },
+    "X-Request-ID": {
+      "description": "ID of the request determined by the initiating party. It must be unique for each request, used to identify the specific request in support processes.",
+      "format": "UUID",
+      "in": "header",
+      "name": "X-Request-ID",
+      "required": true,
+      "type": "string"
+    },
+    "TPP-Explicit-Authorisation-Preferred": {
+      "description": "This is optional header, if specified and set to \"true\" then it means TPP is expecting to start authorisation process separately.",
+      "in": "header",
+      "name": "TPP-Explicit-Authorisation-Preferred",
+      "required": false,
+      "type": "boolean",
+      "default": "false"
+    },
+    "TPP-Redirect-Preferred": {
+      "description": "This is optional header, if specified and set to \"false\", then it means TPP is expecting decoupled SCA approach.",
+      "in": "header",
+      "name": "TPP-Redirect-Preferred",
+      "required": false,
+      "type": "boolean",
+      "default": "true"
+    },
+    "TPP-Redirect-URI": {
+      "description": "URI, to which PSU should be redirected after the completion of SCA process in Swedbank API user interface. Mandatory in redirect SCA approach.",
+      "in": "header",
+      "name": "TPP-Redirect-URI",
+      "required": false,
+      "type": "string"
+    },
+    "TPP-Nok-Redirect-URI": {
+      "description": "URI, to which PSU should be redirected if an error occurs during SCA process in Swedbank API user interface.",
+      "in": "header",
+      "name": "TPP-Nok-Redirect-URI",
+      "required": false,
+      "type": "string"
+    },
+    "PSU-IP-Address": {
+      "description": "The forwarded header must contain correct information about the IP address of the device used by PSU.",
+      "in": "header",
+      "name": "PSU-IP-Address",
+      "required": true,
+      "type": "string",
+      "format": "ipv4"
+    },
+    "PSU-IP-Port": {
+      "description": "The forwarded header must contain correct information about the IP port of the device used by the PSU.",
+      "in": "header",
+      "name": "PSU-IP-Port",
+      "required": false,
+      "type": "integer"
+    },
+    "PSU-User-Agent": {
+      "description": "The forwarded PSU User-Agent header must contain correct information about PSU used browser to interact with TPP.",
+      "in": "header",
+      "name": "PSU-User-Agent",
+      "required": true,
+      "type": "string"
+    },
+    "PSU-Http-Method": {
+      "description": "The forwarded header must contain correct information about the last HTTP method used by PSU to interact with TPP.",
+      "in": "header",
+      "name": "PSU-Http-Method",
+      "required": false,
+      "type": "string",
+      "enum": [
+        "POST",
+        "GET",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ]
+    },
+    "bicBB": {
+      "description": "Bank Identifier Code. Mandatory, unless country specific URL is being used to call API.",
+      "enum": [
+        "SANDEE2X",
+        "SANDLT22",
+        "SANDLV22",
+        "HABAEE2X",
+        "HABALT22",
+        "HABALV22"
+      ],
+      "in": "query",
+      "name": "bic",
+      "required": false,
+      "type": "string"
+    },
+    "Digest": {
+      "description": "Required for signing of the request. Contained only if 'Signature' header is present in the request. In a production environment, this field is mandatory.",
+      "in": "header",
+      "name": "Digest",
+      "type": "string"
+    },
+    "Signature": {
+      "description": "Required for signing of the request. For more information about signing the request refer to the Developer Documentation. In a production environment, this field is mandatory.",
+      "in": "header",
+      "name": "Signature",
+      "type": "string"
+    },
+    "payment-product": {
+      "description": "Payment product type.",
+      "enum": [
+        "sepa-credit-transfers"
+      ],
+      "in": "path",
+      "name": "payment-product",
+      "required": true,
+      "type": "string"
+    },
+    "paymentID": {
+      "description": "ID of the payment resource.",
+      "in": "path",
+      "name": "paymentID",
+      "required": true,
+      "type": "string"
+    },
+    "requestSEPABody": {
+      "description": "Bulk SEPA payments request body object",
+      "in": "body",
+      "name": "body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/bulkPaymentInitiationBodySEPABB"
+      }
+    },
+    "selectDecoupledSCAMethodBody": {
+      "description": "SCA method specification body",
+      "in": "body",
+      "name": "body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/decoupledSCABodyBB"
+      }
+    }
+  },
+  "responses": {
+    "paymentCreatedBB": {
+      "description": "Bulk payments resource is created. Execution of the payments will not start until it is approved by the PSU using SCA.",
+      "schema": {
+        "$ref": "#/definitions/paymentResponse_BB_201"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "ASPSP-SCA-Approach": {
+          "description": "Determines SCA type",
+          "type": "string",
+          "enum": [
+            "REDIRECT",
+            "DECOUPLED"
+          ]
+        }
+      },
+      "examples": {
+        "description": "redirect_with_an_implicitly_created_authorisation_sub_resource",
+        "application/json": {
+          "transactionStatus": "ACTC",
+          "paymentId": "1234w5678",
+          "_links": {
+            "scaRedirect": {
+              "href": "https://.../authentication/123wert983sdgff"
+            },
+            "scaStatus": {
+              "href": "/{version}/bulk-payments/{payment-product}/1234w5678/authorisations/123auth456"
+            },
+            "status": {
+              "href": "/{version}/bulk-payments/{payment-product}/1234w5678/status"
+            },
+            "self": {
+              "href": "/{version}/bulk-payments/{payment-product}/1234w5678"
+            }
+          }
+        },
+        "application/json_decoupled_with_an_implicitly_created_authorisation_sub_resource": {
+          "transactionStatus": "ACTC",
+          "paymentId": "1234w5678",
+          "scaMethods": [
+            {
+              "authenticationType": "Mobile-ID",
+              "authenticationMethodId": "MOBILE_ID"
+            },
+            {
+              "authenticationType": "Smart-ID",
+              "authenticationMethodId": "SMART_ID"
+            }
+          ],
+          "chosenScaMethod": {
+            "authenticationType": "Mobile-ID",
+            "authenticationMethodId": "MOBILE_ID"
+          },
+          "_links": {
+            "startAuthorisationWithAuthenticationMethodSelection": {
+              "href": "/{version}/bulk-payments/1234w5678/authorisations/123auth456"
+            },
+            "scaStatus": {
+              "href": "/{version}/bulk-payments/{payment-product}/1234w5678/authorisations/123auth456"
+            },
+            "self": {
+              "href": "/{version}/bulk-payments/{payment-product}/1234w5678"
+            },
+            "status": {
+              "href": "/{version}/bulk-payments/{payment-product}/1234w5678/status"
+            }
+          }
+        },
+        "application/json_an_explicitly_created_authorisation_sub_resource": {
+          "transactionStatus": "ACTC",
+          "paymentId": "1234w5678",
+          "_links": {
+            "startAuthorisation": {
+              "href": "/{version}/bulk-payments/{payment-product}/1234w5678/authorisations"
+            },
+            "self": {
+              "href": "/{version}/bulk-payments/{payment-product}/1234w5678"
+            },
+            "status": {
+              "href": "/{version}/bulk-payments/{payment-product}/1234w5678/status"
+            }
+          }
+        }
+      }
+    },
+    "paymentCancelled": {
+      "description": "No response body. No response body. Payment was cancelled successfully.",
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      }
+    },
+    "postAuthorisations_201": {
+      "description": "Authorisation sub-resource for the bulk payments created",
+      "schema": {
+        "properties": {
+          "scaStatus": {
+            "$ref": "#/definitions/supportedScaStatus"
+          },
+          "authorisationId": {
+            "description": "ID of the created bulk payments authorisation sub-resource.",
+            "type": "string",
+            "example": "123auth567"
+          },
+          "scaMethods": {
+            "description": "This data element is included when SCA (Strong Customer Authentication) is required and TPP has selected decoupled SCA approach ('TPP-Redirect-Preferred' header value in the request was set to \"false\"). TPP should present these methods to PSU for selection.",
+            "items": {
+              "$ref": "#/definitions/authenticationObjects"
+            },
+            "type": "array"
+          },
+          "chosenScaMethod": {
+            "$ref": "#/definitions/authenticationObject"
+          },
+          "_links": {
+            "description": "A list of short-lived steering links to be used by TPP.\nTypes of links presented in this response:\n- \"scaRedirect\" - returned in case of redirect SCA approach. TPP should redirect PSU to this link to complete SCA flow in Swedbank UI.\n- \"selectAuthenticationMethod \" - returned in case of decoupled SCA approach. Should be used by TPP to initiate PUT request to specify SCA method chosen by PSU.\n- \"scaStatus\" - link to retrieve the scaStatus of the corresponding payment authorisation sub-resource.",
+            "properties": {
+              "scaRedirect": {
+                "$ref": "#/definitions/linkPSU"
+              },
+              "scaStatus": {
+                "$ref": "#/definitions/link"
+              },
+              "selectAuthenticationMethod": {
+                "$ref": "#/definitions/link"
+              }
+            }
+          }
+        },
+        "required": [
+          "scaStatus",
+          "authorisationId",
+          "_links"
+        ],
+        "type": "object"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "ASPSP-SCA-Approach": {
+          "description": "Determines SCA type",
+          "type": "string",
+          "enum": [
+            "REDIRECT",
+            "DECOUPLED"
+          ]
+        }
+      },
+      "examples": {
+        "application/json": {
+          "scaStatus": "received",
+          "authorisationId": "123auth567",
+          "_links": {
+            "scaRedirect": {
+              "href": "https:/.../authentication/123c"
+            },
+            "scaStatus": {
+              "href": "/{version}/bulk-payments/{payment-product}/123abc/authorisations/123auth567"
+            }
+          }
+        },
+        "application/decoupledJson": {
+          "scaStatus": "received",
+          "authorisationId": "123auth567",
+          "scaMethods": [
+            {
+              "authenticationMethodId": "MOBILE_ID",
+              "authenticationType": "Mobile-ID"
+            },
+            {
+              "authenticationMethodId": "SMART_ID",
+              "authenticationType": "Smart-ID"
+            }
+          ],
+          "chosenScaMethod": {
+            "authenticationMethodId": "MOBILE_ID",
+            "authenticationType": "Mobile-ID"
+          },
+          "_links": {
+            "scaStatus": {
+              "href": "/{version}/bulk-payments/{payment-product}/123abc/authorisations/123auth567"
+            },
+            "selectAuthenticationMethod": {
+              "href": "/{version}/bulk-payments/{payment-product}/123abc/authorisations/123auth567"
+            }
+          }
+        }
+      }
+    },
+    "getAuthorisation_200": {
+      "description": "Body of the JSON response with SCA Status",
+      "schema": {
+        "properties": {
+          "scaStatus": {
+            "$ref": "#/definitions/supportedScaStatus"
+          }
+        },
+        "required": [
+          "scaStatus"
+        ],
+        "type": "object"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "scaStatus": "finalised"
+        }
+      }
+    },
+    "patchAuthorisation_200": {
+      "description": "Body of the response for a successful update of authorization sub-resource",
+      "schema": {
+        "properties": {
+          "scaStatus": {
+            "$ref": "#/definitions/supportedScaStatus"
+          },
+          "challengeData": {
+            "$ref": "#/definitions/challengeDataObject"
+          },
+          "psuMessage": {
+            "description": "Text to be displayed to the PSU.\nNote: When SCA is not required, this element will be omitted.",
+            "type": "string",
+            "maxLength": 512,
+            "example": "Approve payment of ${amount} ${currency} to ${receiver} by using your ${scaMethod} device"
+          },
+          "chosenScaMethod": {
+            "$ref": "#/definitions/authenticationObject"
+          },
+          "_links": {
+            "description": "A list of short-lived steering links to be used by TPP.\nTypes of links presented in this response:\n- \"scaStatus\" - link to retrieve the scaStatus of the corresponding authorisation sub-resource.",
+            "properties": {
+              "scaStatus": {
+                "$ref": "#/definitions/link"
+              }
+            }
+          }
+        },
+        "required": [
+          "scaStatus",
+          "challengeData",
+          "psuMessage",
+          "chosenScaMethod",
+          "_links"
+        ],
+        "type": "object"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "ASPSP-SCA-Approach": {
+          "description": "Determines SCA type",
+          "type": "string",
+          "enum": [
+            "REDIRECT",
+            "DECOUPLED"
+          ]
+        }
+      },
+      "examples": {
+        "application/json": {
+          "scaStatus": "started",
+          "challengeData": {
+            "code": "3748"
+          },
+          "psuMessage": "Approve payment of ${amount} ${currency} to ${receiver} by using your ${scaMethod} device",
+          "chosenScaMethod": {
+            "authenticationType": "Smart-Id",
+            "authenticationMethodId": "SMART_ID"
+          },
+          "_links": {
+            "scaStatus": {
+              "href": "/{version}/bulk-payments/{payment-product}/123abc/authorisations/123auth567"
+            }
+          }
+        }
+      }
+    },
+    "getPaymentStatus_200": {
+      "description": "Body of the JSON response with transaction status of the bulk payments and an array of individual payments' statuses ",
+      "schema": {
+        "properties": {
+          "transactionStatus": {
+            "$ref": "#/definitions/supportedTransactionStatus"
+          },
+          "paymentStatus": {
+            "items": {
+              "$ref": "#/definitions/bulkPaymentStatusDetails"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transactionStatus",
+          "paymentStatus"
+        ]
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "transactionStatus": "ACTC",
+          "paymentStatus": [
+            {
+              "transactionStatus": "ACTC",
+              "remittanceInformationUnstructured": "European payment 1",
+              "remittanceInformationStructured": {
+                "reference": "123"
+              }
+            },
+            {
+              "transactionStatus": "ACTC",
+              "remittanceInformationUnstructured": "European payment 2"
+            },
+            {
+              "transactionStatus": "ACTC",
+              "remittanceInformationStructured": {
+                "reference": "321"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "getPayment_200": {
+      "description": "Response body of the addressed bulk payments resource. Schema model depends on initiated bulk payment.",
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Returns count of possible requests",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Returns count of remaining requests",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Returns count of seconds, when count of remaining requests resets",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "debtorAccount": {
+            "iban": "LT00000000000000000000"
+          },
+          "payments": [
+            {
+              "instructedAmount": {
+                "currency": "EUR",
+                "amount": "1"
+              },
+              "creditorAccount": {
+                "iban": "LT00000000000000000001"
+              },
+              "remittanceInformationUnstructured": "Test payment 2024-06-14T11:20:31.100",
+              "endToEndIdentification": "string",
+              "creditorAgent": "HABALT22",
+              "creditorName": "Name Surname"
+            }
+          ]
+        }
+      }
+    },
+    "Error_400": {
+      "description": "Bad request. Details are provided in error code and text.",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "FORMAT_ERROR",
+              "text": "Mandatory header is missing: Date"
+            }
+          ]
+        }
+      }
+    },
+    "Error_400_withTransactionStatus": {
+      "description": "Bad request. Details are provided in error code and text.",
+      "schema": {
+        "$ref": "#/definitions/responseErrorWithTransactionStatus"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "transactionStatus": "RJCT",
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "FORMAT_ERROR",
+              "text": "Mandatory header is missing: Date"
+            }
+          ]
+        }
+      }
+    },
+    "Error_401": {
+      "description": "Unauthorized: missing OAuth2 token or it's expired.",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "TOKEN_INVALID",
+              "text": "Could not match OAuth token to TPP - authorization_link: https://psd2.api.swedbank.com/psd2/authorize?response_type=code&scope=PSD2&bic=SWEDSESS&client_id=&redirect_uri="
+            }
+          ]
+        }
+      }
+    },
+    "Error_403": {
+      "description": "Forbidden, TPP has not ordered this API in Swedbank developer portal",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "SERVICE_BLOCKED",
+              "text": "API not available"
+            }
+          ]
+        }
+      }
+    },
+    "Error_404": {
+      "description": "Resource not found",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "RESOURCE_NOT_FOUND",
+              "text": "Resource not found for payment."
+            }
+          ]
+        }
+      }
+    },
+    "Error_405": {
+      "description": "Not allowed HTTP method",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "SERVICE_INVALID",
+              "text": "HTTP method POST not supported for /{version}/bulk-payments/123abc/authorisations/123auth567"
+            }
+          ]
+        }
+      }
+    },
+    "Error_429": {
+      "description": "Access exceeded - too many requests",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "ACCESS_EXCEEDED",
+              "text": "Reached parallel requests limit: (10)"
+            }
+          ]
+        }
+      }
+    },
+    "Error_500": {
+      "description": "Internal Server Error",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "INTERNAL_ERROR",
+              "text": "Internal Error"
+            }
+          ]
+        }
+      }
+    },
+    "Error_503": {
+      "description": "Service Temporary Unavailable",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "TEMPORARY_UNAVAILABLE",
+              "text": "Planned system maintenance ongoing"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "paths": {
+    "/bulk-payments/sepa-credit-transfers": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Allows to initiate bulk payments in banks where EUR is a local currency (banks in SEPA zone). Available in Baltic countries only./n/nPayments in a bulk payments request are represented as an array of single payments. Each payment within the array contains details, such as the beneficiary's information and the amount to be transferred.",
+        "operationId": "postSepaPayment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/bicBB"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          },
+          {
+            "$ref": "#/parameters/PSU-IP-Address"
+          },
+          {
+            "$ref": "#/parameters/PSU-IP-Port"
+          },
+          {
+            "$ref": "#/parameters/PSU-User-Agent"
+          },
+          {
+            "$ref": "#/parameters/PSU-Http-Method"
+          },
+          {
+            "$ref": "#/parameters/TPP-Redirect-Preferred"
+          },
+          {
+            "$ref": "#/parameters/TPP-Redirect-URI"
+          },
+          {
+            "$ref": "#/parameters/TPP-Nok-Redirect-URI"
+          },
+          {
+            "$ref": "#/parameters/TPP-Explicit-Authorisation-Preferred"
+          },
+          {
+            "$ref": "#/parameters/Digest"
+          },
+          {
+            "$ref": "#/parameters/Signature"
+          },
+          {
+            "$ref": "#/parameters/requestSEPABody"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/paymentCreatedBB"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400_withTransactionStatus"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Initiate Bulk SEPA Payment (for Baltic banks)",
+        "tags": [
+          "bulk payments"
+        ]
+      }
+    },
+    "/bulk-payments/{payment-product}/{paymentID}/authorisations/": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Creates an authorisation sub-resource for initiated bulk payments. Used if explicit authorisation flow is preffered, usually in decoupled SCA approach, in countersigning, allowing more detailed control of the authorisation process. This endpoint URL is obtained via steering links.",
+        "operationId": "postpaymentIdauthorisations",
+        "parameters": [
+          {
+            "$ref": "#/parameters/payment-product"
+          },
+          {
+            "$ref": "#/parameters/paymentID"
+          },
+          {
+            "$ref": "#/parameters/bicBB"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          },
+          {
+            "$ref": "#/parameters/PSU-IP-Address"
+          },
+          {
+            "$ref": "#/parameters/PSU-IP-Port"
+          },
+          {
+            "$ref": "#/parameters/PSU-User-Agent"
+          },
+          {
+            "$ref": "#/parameters/PSU-Http-Method"
+          },
+          {
+            "$ref": "#/parameters/TPP-Redirect-URI"
+          },
+          {
+            "$ref": "#/parameters/TPP-Redirect-Preferred"
+          },
+          {
+            "$ref": "#/parameters/TPP-Nok-Redirect-URI"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/postAuthorisations_201"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400_withTransactionStatus"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Start the authorisation process for a bulk payments",
+        "tags": [
+          "bulk payments"
+        ]
+      }
+    },
+    "/bulk-payments/{payment-product}/{paymentID}/authorisations/{authorisationID}": {
+      "get": {
+        "description": "Allows to read status of an ongoing bulk payments authorisation process. This endpoint URL is obtained via steering links.",
+        "operationId": "getpaymentIdAuthorisationStatus",
+        "parameters": [
+          {
+            "$ref": "#/parameters/payment-product"
+          },
+          {
+            "$ref": "#/parameters/paymentID"
+          },
+          {
+            "$ref": "#/parameters/authorisationID"
+          },
+          {
+            "$ref": "#/parameters/bicBB"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getAuthorisation_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Read bulk payments authorisation state",
+        "tags": [
+          "bulk payments"
+        ]
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Allows to specify SCA method which will be used for bulk payments authorisation in decoupled SCA approach. Starts SCA process by sending a challenge to user's SCA application. This endpoint URL is obtained via steering links.",
+        "operationId": "patchPaymentIdDecoupledAuthorisation",
+        "parameters": [
+          {
+            "$ref": "#/parameters/payment-product"
+          },
+          {
+            "$ref": "#/parameters/paymentID"
+          },
+          {
+            "$ref": "#/parameters/authorisationID"
+          },
+          {
+            "$ref": "#/parameters/bicBB"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          },
+          {
+            "$ref": "#/parameters/selectDecoupledSCAMethodBody"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/patchAuthorisation_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400_withTransactionStatus"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Specify SCA method for decoupled SCA (for Baltic banks)",
+        "tags": [
+          "bulk payments"
+        ]
+      }
+    },
+    "/bulk-payments/{payment-product}/{paymentID}/status": {
+      "get": {
+        "description": "Allows to read the transaction status of the corresponding bulk payments resource. This endpoint URL is obtained via steering links.",
+        "operationId": "getPaymentIdStatus",
+        "parameters": [
+          {
+            "$ref": "#/parameters/payment-product"
+          },
+          {
+            "$ref": "#/parameters/paymentID"
+          },
+          {
+            "$ref": "#/parameters/bicBB"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getPaymentStatus_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Get the transaction status of a bulk payments initiation.",
+        "tags": [
+          "bulk payments"
+        ]
+      }
+    },
+    "/bulk-payments/{payment-product}/{paymentID}": {
+      "get": {
+        "description": "Allows to read content of the initiated bulk payments. This endpoint URL is obtained via steering links.",
+        "operationId": "getPaymentI",
+        "parameters": [
+          {
+            "$ref": "#/parameters/payment-product"
+          },
+          {
+            "$ref": "#/parameters/paymentID"
+          },
+          {
+            "$ref": "#/parameters/bicBB"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getPayment_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Get content of initiated bulk payments.",
+        "tags": [
+          "bulk payments"
+        ]
+      },
+      "delete": {
+        "description": "Allows TPP to cancel initiated payment by changing it's state to \"CANC\".",
+        "operationId": "deleteConsent",
+        "parameters": [
+          {
+            "$ref": "#/parameters/payment-product"
+          },
+          {
+            "$ref": "#/parameters/paymentID"
+          },
+          {
+            "$ref": "#/parameters/bicBB"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/paymentCancelled"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Delete initiated payment",
+        "tags": [
+          "bulk payments"
+        ]
+      }
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "tags": [
+    {
+      "description": "The Payment Initiation Service (PIS) allows the initiation of a bulk payments. Following the bulk payments initiation request, payment systems handle the payments data asynchronously. TPP should continuously check the bulk payments status to ensure that it is ready for the subsequent steps in the payment process.",
+      "name": "bulk payments"
+    }
+  ]
+}

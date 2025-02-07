@@ -1,0 +1,20 @@
+@startuml redirect-payment-basket-signing-sd
+
+skinparam monochrome true
+skinparam shadowing false
+
+title Signing Basket Initiation diagram
+
+Actor User as PSU
+Participant TPP
+Participant Swedbank
+
+autonumber
+TPP->Swedbank:POST/ Signing Basket Initiation request \n array of //paymentId//
+
+== SCA flow ==
+
+TPP->Swedbank: GET/ Request content of initiated signing basket
+TPP<--Swedbank:200/ Return content of initiated signing basket \n (//transactionStatus//, array of //paymentId// which has not been authorised yet)
+
+@enduml

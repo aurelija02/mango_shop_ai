@@ -1,0 +1,48 @@
+'wiki page: https://wiki.swedbank.net/display/OBAPIM/Decoupled+Sequence+Diagram#DecoupledSequenceDiagram-Decoupled%22Addrecipient%22SCASEsequencediagram(forpublicdocumenation)
+
+@startuml decoupled-add-recipient-se-sd
+
+title Execute Basket Decoupled
+skinparam monochrome true
+skinparam shadowing false
+
+autonumber
+TPP -> Swedbank : PUT selectAuthenticationMethod(Mobile Bank Id)
+
+Swedbank -> BankID ++ : start SCA
+Swedbank <-- BankID : started
+
+TPP <-- Swedbank : HTTP200 Response \n //(scaSatus, selectedAuthenticationMethod, psuMessage, tppMessages, _links{scaStatus})//
+TPP -> TPP ++: Launch of Mobile BankID
+
+loop repeat every 2s while scaStat	us not changed
+	TPP -> Swedbank : GET scaStatus
+	Swedbank -> BankID : GET /authorisation //status//
+	BankID --> Swedbank : authorisation //status//
+	deactivate BankID
+	TPP <-- Swedbank : Return //(scaStatus, _links{startAuthorisation})// \n to start payment authorisation
+end loop
+
+opt only if startAuthorisation link is present.
+  TPP -> Swedbank : POST basket authorisation(Mobile Bank Id)
+  Swedbank --> TPP : new authorisation created
+  TPP -> Swedbank : PUT selectAuthenticationMethod(Mobile Bank Id)
+    
+	Swedbank -> BankID ++ : start SCA
+	Swedbank <-- BankID : started
+	
+	TPP <-- Swedbank : HTTP200 Response \n //(scaSatus, selectedAuthenticationMethod, psuMessage, tppMessages, _links{scaStatus})//
+	TPP -> TPP ++: Launch of Mobile BankID
+	
+	loop repeat every 2s while scaStatus not changed
+		TPP -> Swedbank : GET scaStatus
+		Swedbank -> BankID : GET /authorisation //status//
+		BankID --> Swedbank : authorisation //status//
+		deactivate BankID
+		TPP <-- Swedbank : Return //(scaStatus)//
+	end loop
+end
+
+deactivate TPP
+
+@enduml

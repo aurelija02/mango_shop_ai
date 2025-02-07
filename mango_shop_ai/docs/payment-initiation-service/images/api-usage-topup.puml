@@ -1,0 +1,36 @@
+@startuml api-usage-payout
+
+skinparam monochrome true
+skinparam shadowing false
+
+title Payout usage diagram
+
+Actor Representative
+Participant TPP
+Participant Swedbank
+
+alt if no representative token or token expired
+Representative->Swedbank: Authorisation flow (login)
+TPP<-Swedbank: representative token
+end
+
+== Payout ==
+autonumber 1
+TPP->Swedbank: POST /payment (payout) initiation request
+TPP<--Swedbank: 201 Created \n Return //paymentId, transactionStatus, scaMethods//
+TPP->Swedbank: PUT /payments/.../authorisations \n SCA is completed automatically
+TPP<--Swedbank: 201 Created \n Return //authorisationId, scaStatus//
+
+loop check authorisation //status// until changed
+    autonumber 5.1
+    TPP->Swedbank: GET /payments/.../authorisations/...
+    TPP<--Swedbank: 200 OK \n Return Authorisation //scaStatus//
+end
+
+loop check payment //status// until changed
+    autonumber 6.1
+    TPP->Swedbank: GET /payments/.../status
+    TPP<--Swedbank: 200 OK \n Return Payment //transactionStatus//
+end
+
+@enduml

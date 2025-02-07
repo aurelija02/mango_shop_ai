@@ -1,0 +1,22 @@
+@startuml redirect-payment-periodic-sd
+
+skinparam monochrome true
+skinparam shadowing false
+
+title Recurring/Periodic Payment Initiation diagram
+
+
+Actor User as PSU
+Participant TPP
+Participant Swedbank
+
+autonumber
+TPP->Swedbank:POST/ Recurring/periodic payment Initiation request \n//(startDate, frequency)//
+
+== SCA flow ==
+loop check payment //status// until changed
+    TPP->Swedbank: GET /recurring/periodic payment //status//
+    TPP<--Swedbank:200 OK \n Return recurring/periodic payment //status//
+end
+
+@enduml

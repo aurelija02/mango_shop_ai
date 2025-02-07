@@ -1,0 +1,37 @@
+@startuml payment-state-diagram
+
+skinparam monochrome true
+skinparam shadowing false
+
+title Payment state diagram
+
+State "Authorisation" as auth <<sdlreceive>>
+ACTC : ACceptedTechnicalCorrect 
+CANC : CANCelled
+ACSP : ACceptedSettlementinProcess 
+PATC : PrtiallyAcceptedTechnicalCorrect
+ACCP : ACceptedCustomerProfile
+ACSC : ACceptedSettlementCompleted 
+RJCT : ReJeCTed 
+
+[*] --> ACTC : initiation 
+ACTC --> auth : authorise
+auth --> ACSP : authorised 
+auth --> PATC : authorised 
+auth --> ACCP : authorised 
+PATC --> PATC : authorised 
+ACCP --> ACSC : debited 
+ACCP --> CANC : cancelation (SE&BB future-dated; LV&SE-recurring)
+ACSP --> ACSC : debited 
+PATC --> ACSC : debited
+ACSP --> CANC : cancellation 
+PATC --> CANC : cancellation 
+ACSC --> CANC : cancellation (BB after cut-off) 
+ACTC --> CANC : cancellation 
+auth --> RJCT : Authorisation rejected 
+ACSC --> [*] : final status (except special cases) 
+RJCT --> [*] : final status 
+CANC --> [*] : final status
+
+@enduml
+

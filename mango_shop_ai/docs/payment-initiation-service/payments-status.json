@@ -1,0 +1,480 @@
+{
+  "basePath": "/sandbox/v5",
+  "definitions": {
+    "link": {
+      "properties": {
+        "href": {
+          "description": "Link to resource without current server name (without beginning https://[server])",
+          "type": "string",
+          "pattern": "^/sandbox/v5/"
+        }
+      },
+      "required": [
+        "href"
+      ],
+      "type": "object"
+    },
+    "supportedTransactionStatus": {
+      "description": "The overall life cycle transaction status of the payment. The transaction status is filled with codes of the ISO 20022 data table: \n\n \"ACTC\" - \"AcceptedTechnicalValidation\" Payment has been initiated successfully meaning that authentication and syntactical and semantic validation are successful. \n\n \"ACSC\" - \"AcceptedSettlementCompleted\" Payment has been successfully processed and debited meaning that settlement on the debtorâ€™s account has been completed. \n\n \"ACCP\" - \"AcceptedCustomerProfile\" Payment has been successfully processed and prepared to be debited when future date becomes current date.  Once payment is executed it status changed to ACSC.  \n\n \"ACSP\" - \"AcceptedSettlementInProcess\" All preceding checks such as technical validation and customer profile were successful, but payment did not make it before cut-off time and trading room, therefore the payment initiation has been accepted for execution, which means that payment is being put on hold and is going to be processed once trading room is available again. \n\n \"PATC\" - \"PartiallyAcceptedTechnicalCorrect\"  Payment requires countersigning, meaning that the first signature has been applied, but it still requires more. \n\n \"CANC\" - \"Cancelled\" Payment initiation has been cancelled before execution. \n\n \"RJCT\" - \"Rejected\" Payment initiation or individual transaction included in the payment initiation has been rejected.",
+      "type": "string",
+      "enum": [
+        "ACTC",
+        "ACSC",
+        "ACCP",
+        "ACSP",
+        "PATC",
+        "CANC",
+        "RJCT"
+      ],
+      "example": "ACTC"
+    },
+    "errorMessage": {
+      "description": "Messages to the TPP on operational issues.",
+      "properties": {
+        "category": {
+          "description": "Category of the TPP message category",
+          "type": "string",
+          "enum": [
+            "ERROR"
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "category",
+        "code"
+      ],
+      "type": "object"
+    },
+    "responseError": {
+      "properties": {
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessage"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "host": "psd2.api.swedbank.com:443",
+  "info": {
+    "contact": {
+      "email": "openbanking@swedbank.com",
+      "name": "contact"
+    },
+    "description": "This endpoint is used to check a initiated payment status on behalf of a customer. Request is available to TPP's with Payment Initiation Service Provider (PISP) license. In all our queries country specific URL (check Developer Documentation for more details), or bic code parameter is mandatory. As API covers multiple banks, it is used to specify correct backend. Please note that Swedbank Sweden and cooperating Savings Banks share the same bic/country code.",
+    "license": {
+      "name": "See Developer Documentation",
+      "url": "https://online.swedbank.se/ConditionsEarchive/download?bankid=1111&id=WEBDOC-PRODE24296774"
+    },
+    "title": "Payment Initiation Services API",
+    "version": "4.0.0"
+  },
+  "parameters": {
+    "app-id": {
+      "description": "API Key (Client ID) from Swedbank developer portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "app-id",
+      "required": false,
+      "type": "string"
+    },
+    "X-Request-ID": {
+      "description": "ID of the request as determined by the initiating party. It must be unique for each request.",
+      "format": "UUID",
+      "in": "header",
+      "name": "X-Request-ID",
+      "required": true,
+      "type": "string"
+    },
+    "Date": {
+      "description": "Standard http header element defines date and time at which the message was originated (in \"HTTP-date\" format as defined by RFC 7231 Date/Time Formats e.g. Mon, 01 Apr 2019 15:15:01GMT )",
+      "format": "date-time-rfc1123",
+      "in": "header",
+      "name": "Date",
+      "required": true,
+      "type": "string"
+    },    
+    "bic": {
+      "description": "Bank Identifier Code. Mandatory, unless country specific URL is being used to call API.",
+      "enum": [
+        "SANDSESS",
+        "SANDEE2X",
+        "SANDLT22",
+        "SANDLV22",
+        "SWEDSESS",
+        "HABAEE2X",
+        "HABALT22",
+        "HABALV22"
+      ],
+      "in": "query",
+      "name": "bic",
+      "required": false,
+      "type": "string"
+    },
+    "payment-product": {
+      "description": "Indication of a payment product.",
+      "in": "path",
+      "name": "payment-product",
+      "required": true,
+      "type": "string",
+      "enum": [
+        "se-domestic-credit-transfers",
+        "se-international-credit-transfers",
+        "se-international-express-credit-transfers",
+        "se-international-financial-credit-transfers",
+        "sepa-credit-transfers",
+        "pain.001-sepa-credit-transfers",
+        "instant-sepa-credit-transfers",
+        "cross-border-credit-transfers"
+      ]
+    },
+    "paymentID": {
+      "description": "ID of the payment resource.",
+      "in": "path",
+      "name": "paymentID",
+      "required": true,
+      "type": "string"
+    },
+  },
+  "responses": {
+    "getPaymentStatus_200": {
+      "description": "Body of the response for a successful payment initiation status request in case of a JSON based endpoint.",
+      "schema": {
+        "properties": {
+          "transactionStatus": {
+            "$ref": "#/definitions/supportedTransactionStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transactionStatus"
+        ]
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "transactionStatus": "ACSC"
+        }
+      }
+    },
+    "Error_400": {
+      "description": "Bad request. Details are provided in error code and text.",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "FORMAT_ERROR",
+              "text": "Mandatory header is missing: Date"
+            }
+          ]
+        }
+      }
+    },
+    "Error_401": {
+      "description": "Unauthorized: missing OAuth2 token or it's expired.",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "TOKEN_INVALID",
+              "text": "OAuth2 token not valid for given service or resource authorization_link: https://psd2.api.swedbank.com/psd2/authorize..."
+            }
+          ]
+        }
+      }
+    },
+    "Error_403": {
+      "description": "Forbidden, TPP haven't ordered this API in Swedbank developer portal",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "SERVICE_BLOCKED",
+              "text": "API not available"
+            }
+          ]
+        }
+      }
+    },
+    "Error_404": {
+      "description": "Forbidden, TPP haven't ordered this API in Swedbank developer portal",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "BACKEND_ERROR",
+              "text": "Resource not found for payment."
+            }
+          ]
+        }
+      }
+    },
+    "Error_405": {
+      "description": "Not allowed HTTP method",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "SERVICE_INVALID",
+              "text": "HTTP method POST not supported for /{version}/payments/123abc/authorisations/123auth567"
+            }
+          ]
+        }
+      }
+    },
+    "Error_429": {
+      "description": "Access exceeded - too many requests",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "ACCESS_EXCEEDED",
+              "text": "Account plan limit exceeded. Reason: Not Set|l7a72cf3b8389b4db889bc50689494e15a|a89cde34-8ba7-471d-8686-2548f5e4c1dd|quota?failed"
+            }
+          ]
+        }
+      }
+    },
+    "Error_500": {
+      "description": "Internal Server Error",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "INTERNAL_ERROR",
+              "text": "Internal Error"
+            }
+          ]
+        }
+      }
+    },
+    "Error_503": {
+      "description": "Service Temporary Unavailable",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "TEMPORARY_UNAVAILABLE",
+              "text": "Planned system maintenance ongoing"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "paths": {
+    "/payments-status/{paymentID}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "This method returns transaction status of a payment initiation. This endpoint URL is obtained via steering links.",
+        "operationId": "getPaymentIdStatus",
+        "parameters": [
+          {
+            "$ref": "#/parameters/paymentID"
+          },
+          {
+            "$ref": "#/parameters/bic"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getPaymentStatus_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Get the transaction status of a payment initiation.",
+        "tags": [
+          "payments"
+        ]
+      }
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "tags": [
+    {
+      "description": "The Payment Initiation Service (PIS) offers initiation of a payment request. During the payment initiation the payment systems will process the payment data asynchronously. The client must continuously check the status of the payment to make sure that the payment is ready for the next step in the payment process.",
+      "name": "payments status"
+    }
+  ]
+}

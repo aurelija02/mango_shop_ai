@@ -1,0 +1,32 @@
+Participant TPP
+Participant Swedbank
+
+alt if no User token or token expired
+User->Swedbank: Authorisation flow (login)
+TPP<-Swedbank: User token
+end
+
+alt if accounts list needed
+TPP->Swedbank: GET accounts list
+end
+
+== Topup ==
+autonumber 1
+TPP->Swedbank: POST /payment initiation request with implicit authorisation
+TPP<--Swedbank: 201 Created \n Return //paymentId, transactionStatus, scaMethods//
+TPP->Swedbank: PUT /payments/.../authorisations \n sleected SCA method
+TPP<--Swedbank: 201 Created \n Return //authorisationId, scaStatus//
+
+loop check authorisation //status// until changed
+    autonumber 5.1
+    TPP->Swedbank: GET /payments/.../authorisations/...
+    TPP<--Swedbank: 200 OK \n Return Authorisation //scaStatus//
+end
+
+loop check payment //status// until changed
+    autonumber 6.1
+    TPP->Swedbank: GET /payments/.../status
+    TPP<--Swedbank: 200 OK \n Return Payment //transactionStatus//
+end
+
+@enduml

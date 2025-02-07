@@ -1,0 +1,1639 @@
+{
+  "basePath": "/sandbox/v5",
+  "definitions": {
+    "link": {
+      "properties": {
+        "href": {
+          "description": "URL path to the resource",
+          "type": "string",
+          "pattern": "^/sandbox/v5/"
+        }
+      },
+      "required": [
+        "href"
+      ],
+      "type": "object"
+    },
+    "linkPSU": {
+      "properties": {
+        "href": {
+          "description": "Link to page where PSU has to be redirected for SCA process",
+          "type": "string"
+        }
+      },
+      "required": [
+        "href"
+      ],
+      "type": "object"
+    },
+    "paymentIdWithError": {
+      "properties": {
+        "paymentId": {
+          "$ref": "#/definitions/paymentId"
+        },
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessageWithoutCategory"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "paymentId",
+        "tppMessages"
+      ],
+      "type": "object"
+    },
+    "paymentId": {
+      "description": "ID of the payment resource.",
+      "type": "string",
+      "example": "1234-wertiq-983"
+    },
+    "paymentIdList": {
+      "description": "A list of paymentIds",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/paymentId"
+      }
+    },
+    "supportedSigningBasketStatus": {
+      "description": "Status of the signing basket transaction:\n\n - \"ACTC\" - \"AcceptedTechnicalValidation\"\n\n - \"CANC\" - \"Cancelled\"\n\n - \"RJCT\" - \"Rejected\"",
+      "type": "string",
+      "enum": [
+        "ACTC",
+        "RJCT",
+        "CANC"
+      ],
+      "example": "ACTC"
+    },
+    "supportedScaStatus": {
+      "description": "Displays the current state of SCA routine:\n\n \"received\" - data for authorisaton process has been received and authorisation sub-resource has been created. \n\n \"started\" - The addressed SCA routine has been started. In a redirect approach PSU has followed scaRedirect URL, in a decoupled approach PSU started interaction in SCA app but not yet authorised. \n\n \"finalised\" - SCA routine has been successfully completed. \n\n \"failed\" - SCA routine failed, something went wrong during the signing process.",
+      "type": "string",
+      "enum": [
+        "received",
+        "started",
+        "finalised",
+        "failed"
+      ],
+      "example": "received"
+    },
+    "signingBasketInitiationBodySE": {
+      "description": "Content of the body of a signing basket initiation request.",
+      "properties": {
+        "paymentIds": {
+          "$ref": "#/definitions/paymentIdList"
+        }
+      },
+      "required": [
+        "paymentIds"
+      ],
+      "type": "object",
+      "example": {
+        "paymentIds": [
+          "1234p567",
+          "1234p568",
+          "1234p888"
+        ]
+      }
+    },
+    "errorMessage": {
+      "description": "Messages to the TPP on operational issues.",
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "ERROR"
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "category",
+        "code"
+      ],
+      "type": "object"
+    },
+    "errorMessageWithoutCategory": {
+      "description": "Messages to the TPP on operational issues.",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "type": "object"
+    },
+    "responseError": {
+      "properties": {
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessage"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "challengeDataObject": {
+      "description": "It is contained in addition to the data element \"chosenScaMethod\" if challenge data is needed for SCA.",
+      "properties": {
+        "code": {
+          "description": "Always returned when used in Baltics. Challenge code displayed in PSUs SCA app. Display it to a PSU over an application.",
+          "type": "string",
+          "example": "3748"
+        },
+        "autoStartToken": {
+          "description": "Returned only when used in Sweden and if 'Qr-Code-Required' header not present or its value is set to false. Use the autostarttoken to create a URI of the format: bankid:///?autostarttoken={autostarttoken} \n If the PSU is on a device with Mobile Bank ID installed, launch the URI directly. This will start Mobile BankID application and request authorisation. more information is on BankID integration guidelines https://www.bankid.com/.",
+          "type": "string",
+          "example": "a4904c4c-3bb4-4e3f-8ac3-0e950e529e5f"
+        },
+        "imageLink": {
+          "description": "Returned only when used in Sweden Decoupled flow and if 'Qr-Code-Required' header's value is set to true. It's a steering link that would return either static or dynamic PNG image that contains QR code. In case of dynamic image - it must be updated each 1000 ms. It'd become dynamic in the middle of 2020 summer, however, it is recommended to implement image refresh anyway, since static image link would still return valid value multiple times. In order to find more details about its usage, please refer to PSD2 Authorize decoupled section.",
+          "type": "string",
+          "example": "/authorize-image/3543ad25sdf543"
+        }
+      },
+      "type": "object"
+    },
+    "addRecipient": {
+      "description": "TPP info message informing TPP that recipient signing is required",
+      "properties": {
+        "category": {
+          "type": "string",
+          "example": "INFO"
+        },
+        "code": {
+          "type": "string",
+          "example": "RECIPIENT_MISSING"
+        },
+        "text": {
+          "type": "string",
+          "example": "PSU must add recipient to recipient list first."
+        }
+      },
+      "type": "object",
+      "required": [
+        "category",
+        "code",
+        "text"
+      ]
+    },
+    "signingBasketResponse_200": {
+      "description": "Body of the JSON response for a successful get signing basket request. \n\n- 'payments': payment initiations which shall be authorised through this signing basket. \n\n- transactionStatus': Only the codes ACTC, RJCT, CANC are used.",
+      "properties": {
+        "payments": {
+          "$ref": "#/definitions/paymentIdList"
+        },
+        "transactionStatus": {
+          "$ref": "#/definitions/supportedSigningBasketStatus"
+        }
+      },
+      "required": [
+        "transactionStatus"
+      ],
+      "type": "object"
+    },
+    "signingBasketStatusResponse_200": {
+      "description": "Body of the JSON response for a successful get signing basket status request.",
+      "properties": {
+        "transactionStatus": {
+          "$ref": "#/definitions/supportedSigningBasketStatus"
+        },
+        "tppMessages": {
+          "items": {
+            "$ref": "#/definitions/errorMessage"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "transactionStatus"
+      ],
+      "type": "object"
+    },
+    "scaMethods": {
+      "description": "This data element is included when SCA (Strong Customer Authentication) is required and TPP has selected decoupled SCA approach ('TPP-Redirect-Preferred' header value in the request was set to \"false\"). TPP should present these methods to PSU for selection.",
+      "items": {
+        "$ref": "#/definitions/authenticationObjects"
+      },
+      "type": "array"
+    },
+    "authenticationObject": {
+      "description": "Identifies authentication method selected by PSU. TPP should present it to PSU for informational purposes.",
+      "properties": {
+        "authenticationType": {
+          "description": "Type of the authentication method a.k.a friendly name.",
+          "type": "string",
+          "example": "Smart-Id"
+        },
+        "authenticationMethodId": {
+          "description": "An identification of the authentication method.",
+          "type": "string",
+          "example": "SMART_ID"
+        }
+      },
+      "type": "object",
+      "required": [
+        "authenticationType",
+        "authenticationMethodId"
+      ]
+    },
+    "authenticationObjects": {
+      "description": "Authentication methods used by PSU.",
+      "properties": {
+        "authenticationType": {
+          "description": "Type of the authentication method a.k.a friendly name.",
+          "type": "string",
+          "example": "Smart-Id"
+        },
+        "authenticationMethodId": {
+          "description": "An identification of the authentication method.",
+          "type": "string",
+          "example": "SMART_ID"
+        }
+      },
+      "type": "object",
+      "required": [
+        "authenticationType",
+        "authenticationMethodId"
+      ]
+    },
+    "paymentBasketResponse_SE_201": {
+      "description": "Body of the response in JSON format of a successful signing basket initiation request",
+      "properties": {
+        "transactionStatus": {
+          "$ref": "#/definitions/supportedSigningBasketStatus"
+        },
+        "basketId": {
+          "type": "string",
+          "example": "1234-basket-w983",
+          "description": "ID of the created signing basket resource."
+        },
+        "scaMethods": {
+          "$ref": "#/definitions/scaMethods"
+        },
+        "chosenScaMethod": {
+          "$ref": "#/definitions/authenticationObject"
+        },
+        "_links": {
+          "description": "A list of short-lived steering links to be used by TPP.\nTypes of links presented in this response:\n\n- \"scaRedirect\" - returned in case of redirect SCA approach. TPP should redirect PSU to this link to complete SCA flow in Swedbank UI.\n\n- \"self\" - link to retrieve the details about the signing basket resource created by this request.\n\n- \"status\" - link to retrieve the status of the signing basket resource.\n\n- \"scaStatus\" - link to retrieve the scaStatus of the corresponding signing basket authorisation sub-resource. Returned in case of implicit authorisation flow. \n\n- \"startAuthorisation\" - returned in case of explicit authorisation flow. Should be used by TPP to initiate POST request and start authorisation.\n\n- \"startAuthorisationWithAuthenticationMethodSelection\" - returned in case of implicit authorisation flow and if decoupled SCA approach is preferred. Should be used by TPP to initiate PUT request to specify SCA method chosen by PSU and start authorisation process.",
+          "properties": {
+            "scaRedirect": {
+              "$ref": "#/definitions/linkPSU"
+            },
+            "self": {
+              "$ref": "#/definitions/link"
+            },
+            "status": {
+              "$ref": "#/definitions/link"
+            },
+            "scaStatus": {
+              "$ref": "#/definitions/link"
+            },
+            "startAuthorisation": {
+              "$ref": "#/definitions/link"
+            },
+            "startAuthorisationWithAuthenticationMethodSelection": {
+              "$ref": "#/definitions/link"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "transactionStatus",
+        "basketId",
+        "_links"
+      ],
+      "type": "object"
+    },
+    "decoupledSCABody": {
+      "description": "PSU Authentication body which identifies PSUs selected authentication method and starts authorisation process.",
+      "properties": {
+        "authenticationMethodId": {
+          "description": "An identification which will be required to be submited with the request in order to start authentication.",
+          "type": "string",
+          "example": "MOBILE_ID"
+        }
+      },
+      "type": "object",
+      "required": [
+        "authenticationMethodId"
+      ]
+    }
+  },
+  "host": "psd2.api.swedbank.com:443",
+  "info": {
+    "contact": {
+      "email": "openbanking@swedbank.com",
+      "name": "contact"
+    },
+    "description": "In Sweden, Signing Baskets API is used to create a signing basket resource which allows to authorize several payments with a single Strong Customer Authentication (SCA). This API is accessible to Third-Party Providers holding a Payment Initiation Service Provider (PISP) license.\nEach request requires a valid OAuth 2.0 token, which must be included in the 'Authorization' header of the request.",
+    "license": {
+      "name": "See Developer Documentation",
+      "url": "https://online.swedbank.se/ConditionsEarchive/download?bankid=1111&id=WEBDOC-PRODE24296774"
+    },
+    "title": "Signing Baskets API",
+    "version": "3.0.0"
+  },
+  "parameters": {
+    "Authorization": {
+      "description": "Standard security header. Supported only with OAuth2 token in format 'Bearer ${OAuth2_token}'.",
+      "in": "header",
+      "name": "Authorization",
+      "required": true,
+      "type": "string"
+    },
+    "authorisationID": {
+      "description": "Id of an authorisation sub-resource.",
+      "in": "path",
+      "name": "authorisationID",
+      "required": true,
+      "type": "string"
+    },
+    "app-id": {
+      "description": "API Key (Client ID) from Swedbank developer portal.",
+      "format": "UUID",
+      "in": "query",
+      "name": "app-id",
+      "required": false,
+      "type": "string"
+    },
+    "Date": {
+      "description": "Standard HTTP header defines the date and time at which the message was originated (in 'HTTP-date' format as defined by RFC 7231 Date/Time Formats, for example, 'Mon, 01 Apr 2019 15:15:01GMT').",
+      "format": "date-time-rfc1123",
+      "in": "header",
+      "name": "Date",
+      "required": true,
+      "type": "string"
+    },
+    "X-Request-ID": {
+      "description": "ID of the request determined by the initiating party. It must be unique for each request, used to identify the specific request in support processes.",
+      "format": "UUID",
+      "in": "header",
+      "name": "X-Request-ID",
+      "required": true,
+      "type": "string"
+    },
+    "TPP-Explicit-Authorisation-Preferred": {
+      "description": "This is optional header, if specified and set to \"true\" then it means TPP is expecting to start authorisation process separately.",
+      "in": "header",
+      "name": "TPP-Explicit-Authorisation-Preferred",
+      "required": false,
+      "type": "boolean",
+      "default": "false"
+    },
+    "TPP-Redirect-Preferred": {
+      "description": "This is optional header, if specified and set to \"false\", then it means TPP is expecting decoupled SCA approach.",
+      "in": "header",
+      "name": "TPP-Redirect-Preferred",
+      "required": false,
+      "type": "boolean",
+      "default": "true"
+    },
+    "TPP-Redirect-URI": {
+      "description": "URI, to which PSU should be redirected after the completion of SCA process in Swedbank API user interface. Mandatory in redirect SCA approach.",
+      "in": "header",
+      "name": "TPP-Redirect-URI",
+      "required": false,
+      "type": "string"
+    },
+    "TPP-Nok-Redirect-URI": {
+      "description": "URI, to which PSU should be redirected if an error occurs during SCA process in Swedbank API user interface.",
+      "in": "header",
+      "name": "TPP-Nok-Redirect-URI",
+      "required": false,
+      "type": "string"
+    },
+    "PSU-IP-Address": {
+      "description": "The forwarded header must contain correct information about the IP address of the device used by PSU.",
+      "in": "header",
+      "name": "PSU-IP-Address",
+      "required": true,
+      "type": "string",
+      "format": "ipv4"
+    },
+    "PSU-IP-Port": {
+      "description": "The forwarded header must contain correct information about the IP port of the device used by the PSU.",
+      "in": "header",
+      "name": "PSU-IP-Port",
+      "required": false,
+      "type": "integer"
+    },
+    "PSU-User-Agent": {
+      "description": "The forwarded PSU User-Agent header must contain correct information about PSU used browser to interact with TPP.",
+      "in": "header",
+      "name": "PSU-User-Agent",
+      "required": true,
+      "type": "string"
+    },
+    "PSU-Http-Method": {
+      "description": "The forwarded header must contain correct information about the last HTTP method used by PSU to interact with TPP.",
+      "in": "header",
+      "name": "PSU-Http-Method",
+      "required": false,
+      "type": "string",
+      "enum": [
+        "POST",
+        "GET",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ]
+    },
+    "bicSE": {
+      "description": "Bank Identifier Code. Mandatory, unless country specific URL is being used to call API.",
+      "enum": [
+        "SANDSESS",
+        "SWEDSESS"
+      ],
+      "in": "query",
+      "name": "bic",
+      "required": false,
+      "type": "string"
+    },
+    "Digest": {
+      "description": "Required for signing of the request. Contained only if 'Signature' header is present in the request. In a production environment, this field is mandatory.",
+      "in": "header",
+      "name": "Digest",
+      "type": "string"
+    },
+    "Signature": {
+      "description": "Required for signing of the request. For more information about signing the request refer to the Developer Documentation. In a production environment, this field is mandatory.",
+      "in": "header",
+      "name": "Signature",
+      "type": "string"
+    },
+    "basketID": {
+      "description": "ID of the corresponding signing basket resource.",
+      "in": "path",
+      "name": "basketID",
+      "required": true,
+      "type": "string"
+    },
+    "requestSigningBasketBody": {
+      "description": "Signing basket request body object",
+      "in": "body",
+      "name": "body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/signingBasketInitiationBodySE"
+      }
+    },
+    "Qr-Code-Required": {
+      "description": "Flag to notify if customer's IP address matches Bank ID's IP. By default it's false, so it must be present and set to true only if IP addresses match.",
+      "in": "header",
+      "name": "Qr-Code-Required",
+      "required": false,
+      "type": "boolean",
+      "default": "false"
+    },
+    "selectDecoupledSCAMethodBody": {
+      "description": "PSU authentication data body",
+      "in": "body",
+      "name": "body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/decoupledSCABody"
+      }
+    }
+  },
+  "responses": {
+    "paymentBasketCreatedSE": {
+      "description": "Signing basket resource is created. Execution of the payments will not start until signing basket is approved by PSU using SCA.",
+      "schema": {
+        "$ref": "#/definitions/paymentBasketResponse_SE_201"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "ASPSP-SCA-Approach": {
+          "description": "Determines SCA type",
+          "type": "string",
+          "enum": [
+            "REDIRECT",
+            "DECOUPLED"
+          ]
+        }
+      },
+      "examples": {
+        "application/json": {
+          "transactionStatus": "ACTC",
+          "basketId": "1234-basket-w983",
+          "_links": {
+            "startAuthorisation": {
+              "href": "/{version}/signing-baskets/1234-basket-w983/authorisations"
+            },
+            "status": {
+              "href": "/{version}/signing-baskets/1234-basket-w983/status"
+            },
+            "self": {
+              "href": "/{version}/signing-baskets/1234-basket-w983"
+            }
+          }
+        }
+      }
+    },
+    "postSigningBasketsAuthorisations_201": {
+      "description": "Authorisation sub-resource for signing basket created",
+      "schema": {
+        "properties": {
+          "scaStatus": {
+            "$ref": "#/definitions/supportedScaStatus"
+          },
+          "authorisationId": {
+            "description": "ID of the created signing basket authorisation sub-resource.",
+            "type": "string",
+            "example": "123auth456"
+          },
+          "scaMethods": {
+            "$ref": "#/definitions/scaMethods"
+          },
+          "chosenScaMethod": {
+            "$ref": "#/definitions/authenticationObject"
+          },
+          "_links": {
+            "description": "A list of short-lived steering links to be used by TPP.\nTypes of links presented in this response: \n\n- \"scaRedirect\" - returned in case of redirect SCA approach. TPP should redirect PSU to this link to complete SCA flow in Swedbank UI.\n\n- \"status\" - link to retrieve the status of the signing basket resource.\n\n- \"scaStatus\" - link to retrieve the scaStatus of the corresponding signing basket authorisation sub-resource.\n\n- \"selectAuthenticationMethod\" - returned in case of decoupled SCA approach. Should be used by TPP to initiate PUT request to specify SCA method chosen by PSU.",
+            "properties": {
+              "scaRedirect": {
+                "$ref": "#/definitions/linkPSU"
+              },
+              "status": {
+                "$ref": "#/definitions/link"
+              },
+              "scaStatus": {
+                "$ref": "#/definitions/link"
+              },
+              "selectAuthenticationMethod": {
+                "$ref": "#/definitions/link"
+              }
+            }
+          }
+        },
+        "required": [
+          "scaStatus",
+          "authorisationId",
+          "_links"
+        ],
+        "type": "object"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "ASPSP-SCA-Approach": {
+          "description": "Determines SCA type",
+          "type": "string",
+          "enum": [
+            "REDIRECT",
+            "DECOUPLED"
+          ]
+        }
+      },
+      "examples": {
+        "application/json": {
+          "scaStatus": "received",
+          "authorisationId": "123auth456",
+          "_links": {
+            "scaRedirect": {
+              "href": "https:/.../authentication/123c"
+            },
+            "scaStatus": {
+              "href": "/{version}/signing-baskets/1234-basket-w983/authorisations/123auth456"
+            }
+          }
+        }
+      }
+    },
+    "getAuthorisation_200": {
+      "description": "Body of the JSON response with SCA Status",
+      "schema": {
+        "properties": {
+          "scaStatus": {
+            "$ref": "#/definitions/supportedScaStatus"
+          },
+          "tppMessages": {
+            "items": {
+              "$ref": "#/definitions/errorMessage"
+            },
+            "type": "array"
+          },
+          "unsuccessfulPayments": {
+            "description": "The list includes failed payments and corresponding reason for that. It is important to note that the original payment status might not change. List is designed to include payments with non-critical errors too, where payments should not be rejected, but which will not be processed with the current basket execution process.",
+            "items": {
+              "$ref": "#/definitions/paymentIdWithError"
+            },
+            "type": "array"
+          },
+          "_links": {
+            "description": "Returned if adding the recipient to the debtor's recipient list was required and if the authorization of adding the new recipient was completed successfully. TPP should use the 'startAuthorisation' link to start a new authorization of the signing basket.",
+            "properties": {
+              "startAuthorisation": {
+                "$ref": "#/definitions/link"
+              }
+            }
+          },
+          "mobileBankIDExtensionLink": {
+            "description": "A link to internet bank->MBID extension where PSU can enable extended Mobile BankID needed to authorise new recipient in payment flow",
+            "type": "string",
+            "example": "online.swedbank.se/mobile-bank-id/extend"
+          }
+        },
+        "required": [
+          "scaStatus"
+        ],
+        "type": "object"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "scaStatus": "finalised"
+        }
+      }
+    },
+    "getSigningBasket_200": {
+      "description": "Response body of the addressed signing basket resource.",
+      "schema": {
+        "$ref": "#/definitions/signingBasketResponse_200"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Returns count of possible requests",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Returns count of remaining requests",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Returns count of seconds, when count of remaining requests resets",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "payments": [
+            "1234p567",
+            "1234p568",
+            "1234p888"
+          ],
+          "transactionStatus": "ACTC"
+        }
+      }
+    },
+    "deleteSigningBasket_204": {
+      "description": "No response body.",
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Returns count of possible requests",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Returns count of remaining requests",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Returns count of seconds, when count of remaining requests resets",
+          "type": "number",
+          "format": "integer"
+        }
+      }
+    },
+    "getSigningBasketStatus_200": {
+      "description": "Body of the JSON response with transaction status\n\n",
+      "schema": {
+        "$ref": "#/definitions/signingBasketStatusResponse_200"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Returns count of possible requests",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Returns count of remaining requests",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Returns count of seconds, when count of remaining requests resets",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "transactionStatus": "ACTC"
+        }
+      }
+    },
+    "patchAuthorisation_200": {
+      "description": "Body of the response for a successful authorisation initiation.",
+      "schema": {
+        "properties": {
+          "scaStatus": {
+            "$ref": "#/definitions/supportedScaStatus"
+          },
+          "challengeData": {
+            "$ref": "#/definitions/challengeDataObject"
+          },
+          "psuMessage": {
+            "description": "Text to be displayed to the PSU. Please note in case of when SCA is not required, this won't be included in the response. In case when authorising se-domestic-credit-transfer and when recipient signing is required, TPP error message will be \"Please confirm the recipient to make the payment. When you have added the recipient, the payment can be made. The recipient will thereafter be stored in your recipient list\".",
+            "type": "string",
+            "maxLength": 512,
+            "example": "Approve payment of ${amount} ${currency} to ${receiver} by using your ${scaMethod} device"
+          },
+          "tppMessages": {
+            "description": "For Swedish domestic payments only! If recipient does not exists in recipient list, recipient signing will be required first. TPP message will be included in a PUT response body, meaning that recipient signing is required and new authorisation will need to be created for final payment authorisation.",
+            "items": {
+              "$ref": "#/definitions/addRecipient"
+            },
+            "type": "array"
+          },
+          "chosenScaMethod": {
+            "$ref": "#/definitions/authenticationObject"
+          },
+          "_links": {
+            "description": "A list of short living period steering links to be recognized by the TPP.\n Type of links admitted in this response: \n\n- \"scaStatus\" -The link to retrieve the scaStatus of the corresponding authorisation sub-resource. Should be used by TPP.",
+            "properties": {
+              "scaStatus": {
+                "$ref": "#/definitions/link"
+              }
+            }
+          }
+        },
+        "required": [
+          "scaStatus",
+          "chosenScaMethod",
+          "_links"
+        ],
+        "type": "object"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "ASPSP-SCA-Approach": {
+          "description": "Determines SCA type",
+          "type": "string",
+          "enum": [
+            "REDIRECT",
+            "DECOUPLED"
+          ]
+        }
+      },
+      "examples": {
+        "application/json": {
+          "scaStatus": "started",
+          "challengeData": {
+            "code": "3748"
+          },
+          "psuMessage": "Approve payment of ${amount} ${currency} to ${receiver} by using your ${scaMethod} device",
+          "chosenScaMethod": {
+            "authenticationType": "Smart-Id",
+            "authenticationMethodId": "SMART_ID"
+          },
+          "_links": {
+            "scaStatus": {
+              "href": "/{version}/payments/{payment-product}/123abc/authorisations/123auth456"
+            }
+          }
+        }
+      }
+    },
+    "Error_400": {
+      "description": "Bad request. Details are provided in error code and text.",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "FORMAT_ERROR",
+              "text": "Mandatory header is missing: Date"
+            }
+          ]
+        }
+      }
+    },
+    "Error_401": {
+      "description": "Unauthorized: missing OAuth2 token or it's expired.",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "TOKEN_INVALID",
+              "text": "Could not match OAuth token to TPP - authorization_link: https://psd2.api.swedbank.com/psd2/authorize?response_type=code&scope=PSD2&bic=SWEDSESS&client_id=&redirect_uri="
+            }
+          ]
+        }
+      }
+    },
+    "Error_403": {
+      "description": "Forbidden, TPP haven't ordered this API in Swedbank developer portal",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "SERVICE_BLOCKED",
+              "text": "API not available"
+            }
+          ]
+        }
+      }
+    },
+    "Error_404": {
+      "description": "Resource not found",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "RESOURCE_NOT_FOUND",
+              "text": "Resource not found for payment."
+            }
+          ]
+        }
+      }
+    },
+    "Error_405": {
+      "description": "Not allowed HTTP method",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "SERVICE_INVALID",
+              "text": "HTTP method POST not supported for /{version}/payments/123abc/authorisations/123auth456"
+            }
+          ]
+        }
+      }
+    },
+    "Error_429": {
+      "description": "Access exceeded - too many requests",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "ACCESS_EXCEEDED",
+              "text": "Reached parallel requests limit: (10)"
+            }
+          ]
+        }
+      }
+    },
+    "Error_500": {
+      "description": "Internal Server Error",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "headers": {
+        "X-Request-ID": {
+          "description": "Returns same value as provided in request",
+          "type": "string",
+          "format": "UUID"
+        },
+        "X-Rate-Limit-Limit": {
+          "description": "Part of request throttling process. Returns count of allowed request count per time window.",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Remaining": {
+          "description": "Part of request throttling process. Returns count of remaining requests per time window",
+          "type": "number",
+          "format": "integer"
+        },
+        "X-Rate-Limit-Reset": {
+          "description": "Part of request throttling process. Returns how many seconds are left in current time window.",
+          "type": "number",
+          "format": "integer"
+        }
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "INTERNAL_ERROR",
+              "text": "Internal Error"
+            }
+          ]
+        }
+      }
+    },
+    "Error_503": {
+      "description": "Service Temporary Unavailable",
+      "schema": {
+        "$ref": "#/definitions/responseError"
+      },
+      "examples": {
+        "application/json": {
+          "tppMessages": [
+            {
+              "category": "ERROR",
+              "code": "TEMPORARY_UNAVAILABLE",
+              "text": "Planned system maintenance ongoing"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "paths": {
+    "/signing-baskets": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Allows to create a signing basket resource which groups several domestic transfer/payment initiation resources together to be authorized with a single SCA.\n The following types of domestic transfers/payments can be included in the basket resource:\n\n - Bg/Pg payment (immediate or future dated)\n\n - Account transfer in SEK (immediate, future dated or periodic/recurring)\n\nNote:\n\n - An initiated payment resource may exist in several signing baskets until it is finally signed.\n\n - Multiple baskets can exist simultaneously.\n\n - A basket can contain a maximum of 100 payments.",
+        "operationId": "postSigningBaskets",
+        "parameters": [
+          {
+            "$ref": "#/parameters/bicSE"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          },
+          {
+            "$ref": "#/parameters/PSU-IP-Address"
+          },
+          {
+            "$ref": "#/parameters/PSU-IP-Port"
+          },
+          {
+            "$ref": "#/parameters/PSU-User-Agent"
+          },
+          {
+            "$ref": "#/parameters/PSU-Http-Method"
+          },
+          {
+            "$ref": "#/parameters/TPP-Redirect-Preferred"
+          },
+          {
+            "$ref": "#/parameters/TPP-Redirect-URI"
+          },
+          {
+            "$ref": "#/parameters/TPP-Nok-Redirect-URI"
+          },
+          {
+            "$ref": "#/parameters/TPP-Explicit-Authorisation-Preferred"
+          },
+          {
+            "$ref": "#/parameters/Signature"
+          },
+          {
+            "$ref": "#/parameters/Digest"
+          },
+          {
+            "$ref": "#/parameters/requestSigningBasketBody"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/paymentBasketCreatedSE"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Create a signing basket resource",
+        "tags": [
+          "signing baskets"
+        ]
+      }
+    },
+    "/signing-baskets/{basketID}/authorisations/": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "Creates an authorisation sub-resource for the corresponding signing basket. Used if explicit authorisation flow is preffered, usually in decoupled SCA approach, in countersigning, allowing more detailed control of the authorisation process. This endpoint URL is obtained via steering links.",
+        "operationId": "startSigningBasketAuthorisation",
+        "parameters": [
+          {
+            "$ref": "#/parameters/basketID"
+          },
+          {
+            "$ref": "#/parameters/bicSE"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          },
+          {
+            "$ref": "#/parameters/PSU-IP-Address"
+          },
+          {
+            "$ref": "#/parameters/PSU-IP-Port"
+          },
+          {
+            "$ref": "#/parameters/PSU-User-Agent"
+          },
+          {
+            "$ref": "#/parameters/PSU-Http-Method"
+          },
+          {
+            "$ref": "#/parameters/TPP-Redirect-URI"
+          },
+          {
+            "$ref": "#/parameters/TPP-Redirect-Preferred"
+          },
+          {
+            "$ref": "#/parameters/TPP-Nok-Redirect-URI"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/postSigningBasketsAuthorisations_201"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Start the authorisation process for a signing basket",
+        "tags": [
+          "signing baskets"
+        ]
+      }
+    },
+    "/signing-baskets/{basketID}/authorisations/{authorisationID}": {
+      "get": {
+        "description": "Allows to read status of an ongoing signing basket authorisation process. This endpoint URL is obtained via steering links.",
+        "operationId": "getBasketIdAuthorisationStatus",
+        "parameters": [
+          {
+            "$ref": "#/parameters/basketID"
+          },
+          {
+            "$ref": "#/parameters/authorisationID"
+          },
+          {
+            "$ref": "#/parameters/bicSE"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getAuthorisation_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Read signing basket authorisation state",
+        "tags": [
+          "signing baskets"
+        ]
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "description": "This method specifies SCA method which will be used in decoupled SCA approach and will start authorisation process by sending a challenge code to PSU's SCA app. This endpoint URL is obtained via steering links. If recipient does not exists in recipient list, recipients signing will be required first. TPP message will be included in a response body, meaning that recipients signing is required and that after succesfully authorising recipient new authorisation will need to be created for final basket authorisation.",
+        "operationId": "patchPaymentIdDecoupledAuthorisation",
+        "parameters": [
+          {
+            "$ref": "#/parameters/authorisationID"
+          },
+          {
+            "$ref": "#/parameters/basketID"
+          },
+          {
+            "$ref": "#/parameters/bicSE"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          },
+          {
+            "$ref": "#/parameters/Qr-Code-Required"
+          },
+          {
+            "$ref": "#/parameters/selectDecoupledSCAMethodBody"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/patchAuthorisation_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Specify SCA method for decoupled authorisation",
+        "tags": [
+          "signing baskets"
+        ]
+      }
+    },
+    "/signing-baskets/{basketID}": {
+      "get": {
+        "description": "This method returns the content of a signing basket object and signing basket transaction status. Only failed payments will be returned in the response. This endpoint URL is obtained via steering links.",
+        "operationId": "getSigningBasket",
+        "parameters": [
+          {
+            "$ref": "#/parameters/basketID"
+          },
+          {
+            "$ref": "#/parameters/bicSE"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getSigningBasket_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Get content of initiated signing basket.",
+        "tags": [
+          "signing baskets"
+        ]
+      },
+      "delete": {
+        "description": "Deletes a created signing basket if it is not yet (partially) authorised",
+        "operationId": "deleteSigningBasket",
+        "parameters": [
+          {
+            "$ref": "#/parameters/basketID"
+          },
+          {
+            "$ref": "#/parameters/bicSE"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/deleteSigningBasket_204"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "A cancellation of a Signing Basket where no (partial) authorisation has been applied for the Signing Basket.",
+        "tags": [
+          "signing baskets"
+        ]
+      }
+    },
+    "/signing-baskets/{basketID}/status": {
+      "get": {
+        "description": "This method returns the transaction status of a signing basket object.",
+        "operationId": "getSigningBasketStatus",
+        "parameters": [
+          {
+            "$ref": "#/parameters/basketID"
+          },
+          {
+            "$ref": "#/parameters/bicSE"
+          },
+          {
+            "$ref": "#/parameters/app-id"
+          },
+          {
+            "$ref": "#/parameters/Date"
+          },
+          {
+            "$ref": "#/parameters/Authorization"
+          },
+          {
+            "$ref": "#/parameters/X-Request-ID"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/getSigningBasketStatus_200"
+          },
+          "400": {
+            "$ref": "#/responses/Error_400"
+          },
+          "401": {
+            "$ref": "#/responses/Error_401"
+          },
+          "403": {
+            "$ref": "#/responses/Error_403"
+          },
+          "404": {
+            "$ref": "#/responses/Error_404"
+          },
+          "405": {
+            "$ref": "#/responses/Error_405"
+          },
+          "429": {
+            "$ref": "#/responses/Error_429"
+          },
+          "500": {
+            "$ref": "#/responses/Error_500"
+          },
+          "503": {
+            "$ref": "#/responses/Error_503"
+          }
+        },
+        "summary": "Get transaction status of initiated signing basket.",
+        "tags": [
+          "signing baskets"
+        ]
+      }
+    }
+  },
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "tags": [
+    {
+      "description": "Following the signing basket initiation request, payment systems handle the payments data asynchronously. TPP should continuously check the signing basket status to ensure that it is ready for the subsequent steps in the payment process.",
+      "name": "Signing Baskets"
+    }
+  ]
+}

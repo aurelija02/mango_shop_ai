@@ -1,0 +1,22 @@
+@startuml bulk-payment-sd
+
+skinparam monochrome true
+skinparam shadowing false
+
+title Bulk Payment Initiation diagram
+
+Actor User as PSU
+Participant TPP
+Participant Swedbank
+
+autonumber
+TPP->Swedbank:POST /Payment Initiation request
+
+== SCA flow ==
+
+loop check payment //status// until changed
+    TPP->Swedbank: GET /Payment/status
+    TPP<--Swedbank:200 OK \n Return Payment //status// and array of payments
+end
+
+@enduml

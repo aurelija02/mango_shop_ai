@@ -1,0 +1,34 @@
+@startuml api-usage-payout
+
+skinparam monochrome true
+skinparam shadowing false
+
+title Payout usage diagram
+
+Actor Representative
+Participant Partner
+Participant Swedbank
+
+alt if no representative token or token expired
+Representative->Swedbank: Authorisation flow (login)
+Partner<-Swedbank: representative token
+end
+
+== Payout ==
+autonumber 1
+Partner->Swedbank: POST /payout (payment initiation request)
+Partner<--Swedbank: 201 Created \n Return //paymentId, transactionStatus, _links (status, self)//
+
+loop check payment //status// until changed
+    autonumber 3.1
+    Partner->Swedbank: GET /payout/{paymentId}/status
+    Partner<--Swedbank: 200 OK \n Return //transactionStatus//
+end
+
+opt if payment details needed
+autonumber 4
+Partner->Swedbank: GET /payout/{paymentId}
+Partner<--Swedbank: 200 OK \n Return payment details
+end
+
+@enduml
