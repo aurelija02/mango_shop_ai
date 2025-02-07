@@ -42,7 +42,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${tokenData.access_token}`,
+        'Authorization': `Bearer dummyToken`,
         'X-Request-ID': crypto.randomUUID(),
         'PSU-IP-Address': req.headers['x-forwarded-for'] || req.socket.remoteAddress,
         'Date': new Date().toUTCString(),
@@ -77,7 +77,7 @@ export default async function handler(req, res) {
       `https://psd2.api.swedbank.lt/sandbox/v5/payments/sepa-credit-transfers/${paymentId}/status`,
       {
         headers: {
-          'Authorization': `Bearer ${tokenData.access_token}`,
+          'Authorization': `Bearer dummyToken`,
           'X-Request-ID': crypto.randomUUID(),
           'bic': 'SANDLT22'
         }
