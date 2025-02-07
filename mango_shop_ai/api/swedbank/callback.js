@@ -47,20 +47,22 @@ export default async function handler(req, res) {
         'bic': 'SANDLT22',
         'TPP-Redirect-URI': 'https://mango-tango-shop.vercel.app/checkout/success',
         'TPP-Nok-Redirect-URI': 'https://mango-tango-shop.vercel.app/checkout/error',
-        'TPP-Redirect-Preferred': 'true'  // Explicitly request redirect approach
+        'TPP-Redirect-Preferred': 'true'
       },
       body: JSON.stringify({
-        debtorAccount: {
-          iban: "LT647189999999999999" // Sandbox test account
+        endToEndIdentification: crypto.randomUUID().replace(/-/g, '').slice(0, 35), // Max 35 chars
+        creditorAccount: {
+          iban: "LT647189999999990099"  // Merchant account
+        },
+        creditorName: "Mango Shop",
+        creditorAddress: {  // Required for some cases
+          country: "LT",
+          townName: "Vilnius"
         },
         instructedAmount: {
           currency: "EUR",
-          amount: "10.00" // Get this from your cart total
+          amount: "10.00"
         },
-        creditorAccount: {
-          iban: "LT647189999999990099" // Your merchant account
-        },
-        creditorName: "Mango Shop",
         remittanceInformationUnstructured: "Payment for order"
       })
     });
