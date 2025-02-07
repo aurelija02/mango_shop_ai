@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     
     // Make sure to await the payment response
     // Initiate SEPA payment with app-id as query parameter
-    const paymentResponse = await fetch(`https://psd2.api.swedbank.lt/sandbox/v5/payments/sepa-credit-transfers?app-id=${process.env.SWEDBANK_CLIENT_ID}`, {
+    const paymentResponse = await fetch(`https://psd2.api.swedbank.lt/sandbox/v5/payments/sepa-credit-transfers?bic=SANDLT22&app-id=${process.env.SWEDBANK_CLIENT_ID}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,7 +44,6 @@ export default async function handler(req, res) {
         'PSU-IP-Address': req.headers['x-forwarded-for'] || req.socket.remoteAddress,
         'PSU-User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
         'Date': new Date().toUTCString(),
-        'bic': 'SANDLT22',
         'TPP-Redirect-URI': 'https://mango-tango-shop.vercel.app/checkout/success',
         'TPP-Nok-Redirect-URI': 'https://mango-tango-shop.vercel.app/checkout/error',
         'TPP-Redirect-Preferred': 'true'
