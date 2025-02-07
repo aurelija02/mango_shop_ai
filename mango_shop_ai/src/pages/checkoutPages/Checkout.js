@@ -31,14 +31,16 @@ const Checkout = () => {
     const bic = 'SANDLT22';
     const amount = calculateTotal();
 
-    // Combine amount with random state
+    // Create state object and encode it properly
     const stateData = {
       amount: amount,
-      random: Math.random().toString(36).substring(7)
+      nonce: Math.random().toString(36).substring(7)
     };
+
+    // First stringify the object, then encode it for URL
     const state = encodeURIComponent(JSON.stringify(stateData));
 
-    console.log('State data:', stateData); // Debug log
+    console.log('State data before encoding:', stateData); // Debug log
 
     const authUrl = 'https://psd2.api.swedbank.com/psd2/authorize?' + 
       `bic=${bic}&` +
