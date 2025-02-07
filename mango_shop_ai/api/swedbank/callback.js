@@ -2,7 +2,6 @@ export default async function handler(req, res) {
   try {
     console.log('Starting callback handler...');
     console.log('Query params:', req.query);
-    console.log('Headers:', req.headers);
 
     const { code } = req.query;
 
@@ -35,8 +34,8 @@ export default async function handler(req, res) {
     console.log('Initiating payment...');
     
     // Make sure to await the payment response
-    // Initiate SEPA payment
-    const paymentResponse = await fetch('https://psd2.api.swedbank.lt/sandbox/v5/payments/sepa-credit-transfers', {
+    // Initiate SEPA payment with app-id as query parameter
+    const paymentResponse = await fetch(`https://psd2.api.swedbank.lt/sandbox/v5/payments/sepa-credit-transfers?app-id=${process.env.SWEDBANK_CLIENT_ID}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,8 +43,7 @@ export default async function handler(req, res) {
         'X-Request-ID': crypto.randomUUID(),
         'PSU-IP-Address': req.headers['x-forwarded-for'] || req.socket.remoteAddress,
         'Date': new Date().toUTCString(),
-        'bic': 'SANDLT22',
-        'app-id': process.env.SWEDBANK_CLIENT_ID
+        'bic': 'SANDLT22'
       },
       body: JSON.stringify({
         debtorAccount: {
@@ -77,13 +75,12 @@ export default async function handler(req, res) {
     // Check payment status
     const paymentId = paymentData.paymentId;
     const statusResponse = await fetch(
-      `https://psd2.api.swedbank.lt/sandbox/v5/payments/sepa-credit-transfers/${paymentId}/status`,
+      `https://psd2.api.swedbank.lt/sandbox/v5/payments/sepa-credit-transfers/${paymentId}/status?app-id=${process.env.SWEDBANK_CLIENT_ID}`,
       {
         headers: {
           'Authorization': 'Bearer dummyToken',
           'X-Request-ID': crypto.randomUUID(),
-          'bic': 'SANDLT22',
-          'app-id': process.env.SWEDBANK_CLIENT_ID
+          'bic': 'SANDLT22'
         }
       }
     );
