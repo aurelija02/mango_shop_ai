@@ -44,7 +44,8 @@ export default async function handler(req, res) {
         'X-Request-ID': crypto.randomUUID(),
         'PSU-IP-Address': req.headers['x-forwarded-for'] || req.socket.remoteAddress,
         'Date': new Date().toUTCString(),
-        'bic': 'SANDLT22'
+        'bic': 'SANDLT22',
+        'app-id': process.env.SWEDBANK_CLIENT_ID
       },
       body: JSON.stringify({
         debtorAccount: {
@@ -81,7 +82,8 @@ export default async function handler(req, res) {
         headers: {
           'Authorization': 'Bearer dummyToken',
           'X-Request-ID': crypto.randomUUID(),
-          'bic': 'SANDLT22'
+          'bic': 'SANDLT22',
+          'app-id': process.env.SWEDBANK_CLIENT_ID
         }
       }
     );
