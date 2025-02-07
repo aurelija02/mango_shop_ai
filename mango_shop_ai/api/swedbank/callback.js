@@ -3,11 +3,18 @@ export default async function handler(req, res) {
     console.log('Starting callback handler...');
     console.log('Query params:', req.query);
 
-    const { code } = req.query;
+    const { code, amount } = req.query;
 
     if (!code) {
       throw new Error('No authorization code received');
     }
+
+    if (!amount) {
+      throw new Error('No amount specified');
+    }
+
+    // Format amount to have 2 decimal places
+    const formattedAmount = Number(amount).toFixed(2);
 
     console.log('Got authorization code:', code);
     // Exchange code for token (using v5 and psd2 path)
@@ -51,18 +58,18 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         endToEndIdentification: crypto.randomUUID().replace(/-/g, '').slice(0, 35), // Max 35 chars
         creditorAccount: {
-          iban: "LT647189999999990099"  // Merchant account
+          iban: "LT647189999999990099"
         },
-        creditorName: "Mango Shop",
-        creditorAddress: {  // Required for some cases
+        creditorName: "Mango Tango Shop",
+        creditorAddress: {
           country: "LT",
           townName: "Vilnius"
         },
         instructedAmount: {
           currency: "EUR",
-          amount: "10.00"
+          amount: formattedAmount
         },
-        remittanceInformationUnstructured: "Payment for order"
+        remittanceInformationUnstructured: "Payment for order Mango-Tango-Shop"
       })
     });
 
