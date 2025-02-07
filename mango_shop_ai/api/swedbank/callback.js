@@ -2,6 +2,7 @@ export default async function handler(req, res) {
   try {
     console.log('Starting callback handler...');
     console.log('Query params:', req.query);
+    console.log('Full URL:', req.url);
 
     const { code, amount } = req.query;
 
@@ -10,6 +11,7 @@ export default async function handler(req, res) {
     }
 
     if (!amount) {
+      console.error('Amount missing from query params:', req.query);
       throw new Error('No amount specified');
     }
 

@@ -34,15 +34,19 @@ const Checkout = () => {
 
     console.log('Initiating payment with amount:', amount); // Debug log
 
+    // Encode amount parameter
+    const encodedAmount = encodeURIComponent(amount);
+
     const authUrl = 'https://psd2.api.swedbank.com/psd2/authorize?' + 
       `bic=${bic}&` +
       `client_id=${clientId}&` +
       `redirect_uri=${redirectUri}&` +
       `scope=${scope}&` +
       `state=${state}&` +
-      `amount=${amount}&` +
+      `amount=${encodedAmount}&` +
       'response_type=code';
     
+    console.log('Authorization URL:', authUrl); // Debug log
     window.location.href = authUrl;
   };
 
