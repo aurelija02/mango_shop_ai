@@ -29,13 +29,16 @@ const Checkout = () => {
     const redirectUri = encodeURIComponent('https://mango-tango-shop.vercel.app/api/swedbank/callback');
     const scope = 'PSD2sandbox';
     const bic = 'SANDLT22';
-    const state = Math.random().toString(36).substring(7);
-    const amount = calculateTotal(); // Get the actual total including shipping
+    const amount = calculateTotal();
 
-    console.log('Initiating payment with amount:', amount); // Debug log
+    // Combine amount with random state
+    const stateData = {
+      amount: amount,
+      random: Math.random().toString(36).substring(7)
+    };
+    const state = encodeURIComponent(JSON.stringify(stateData));
 
-    // Encode amount parameter
-    const encodedAmount = encodeURIComponent(amount);
+    console.log('State data:', stateData); // Debug log
 
     const authUrl = 'https://psd2.api.swedbank.com/psd2/authorize?' + 
       `bic=${bic}&` +
@@ -43,7 +46,6 @@ const Checkout = () => {
       `redirect_uri=${redirectUri}&` +
       `scope=${scope}&` +
       `state=${state}&` +
-      `amount=${encodedAmount}&` +
       'response_type=code';
     
     console.log('Authorization URL:', authUrl); // Debug log

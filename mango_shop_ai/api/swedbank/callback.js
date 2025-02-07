@@ -4,21 +4,34 @@ export default async function handler(req, res) {
     console.log('Query params:', req.query);
     console.log('Full URL:', req.url);
 
-    const { code, amount } = req.query;
+    const { code, state } = req.query;
 
     if (!code) {
       throw new Error('No authorization code received');
     }
 
-    if (!amount) {
-      console.error('Amount missing from query params:', req.query);
-      throw new Error('No amount specified');
+    if (!state) {
+      throw new Error('No state parameter received');
+    }
+
+    let stateData;
+    try {
+      stateData = JSON.parse(decodeURIComponent(state));
+    } catch (error) {
+      console.error('Failed to parse state:', error);
+      throw new Error('Invalid state parameter');
+    }
+
+    if (!stateData.amount) {
+      throw new Error('No amount specified in state');
     }
 
     // Format amount to have 2 decimal places
-    const formattedAmount = Number(amount).toFixed(2);
+    const formattedAmount = Number(stateData.amount).toFixed(2);
 
     console.log('Got authorization code:', code);
+    console.log('Using amount from state:', formattedAmount);
+
     // Exchange code for token (using v5 and psd2 path)
     const tokenResponse = await fetch('https://psd2.api.swedbank.com/psd2/token', {
       method: 'POST',
@@ -42,7 +55,6 @@ export default async function handler(req, res) {
 
     console.log('Initiating payment...');
     
-    // Make sure to await the payment response
     // Initiate SEPA payment with app-id as query parameter
     const paymentResponse = await fetch(`https://psd2.api.swedbank.lt/sandbox/v5/payments/sepa-credit-transfers?bic=SANDLT22&app-id=${process.env.SWEDBANK_CLIENT_ID}`, {
       method: 'POST',
@@ -77,7 +89,6 @@ export default async function handler(req, res) {
 
     console.log('Payment response status:', paymentResponse.status);
     
-    // Make sure to await the JSON parsing
     const paymentData = await paymentResponse.json();
     console.log('Payment data:', paymentData);
 
