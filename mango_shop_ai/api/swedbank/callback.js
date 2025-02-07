@@ -44,7 +44,10 @@ export default async function handler(req, res) {
         'PSU-IP-Address': req.headers['x-forwarded-for'] || req.socket.remoteAddress,
         'PSU-User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
         'Date': new Date().toUTCString(),
-        'bic': 'SANDLT22'
+        'bic': 'SANDLT22',
+        'TPP-Redirect-URI': 'https://mango-tango-shop.vercel.app/checkout/success',
+        'TPP-Nok-Redirect-URI': 'https://mango-tango-shop.vercel.app/checkout/error',
+        'TPP-Redirect-Preferred': 'true'  // Explicitly request redirect approach
       },
       body: JSON.stringify({
         debtorAccount: {
@@ -73,37 +76,13 @@ export default async function handler(req, res) {
       throw new Error(errorMessage);
     }
 
-    // Check payment status
-    const paymentId = paymentData.paymentId;
-    const statusResponse = await fetch(
-      `https://psd2.api.swedbank.lt/sandbox/v5/payments/sepa-credit-transfers/${paymentId}/status?app-id=${process.env.SWEDBANK_CLIENT_ID}`,
-      {
-        headers: {
-          'Authorization': 'Bearer dummyToken',
-          'X-Request-ID': crypto.randomUUID(),
-          'bic': 'SANDLT22'
-        }
-      }
-    );
-
-    // Handle different payment statuses
-    switch(statusData.transactionStatus) {
-      case 'ACTC':
-        // Payment initiated successfully
-        res.redirect(307, '/checkout/success');
-        break;
-      case 'ACSC':
-        // Payment completed successfully
-        res.redirect(307, '/checkout/success');
-        break;
-      case 'RJCT':
-        throw new Error('Payment was rejected');
-      case 'CANC':
-        throw new Error('Payment was cancelled');
-      default:
-        throw new Error(`Payment status: ${statusData.transactionStatus}`);
+    // For redirect approach, we should get scaRedirect link in the response
+    if (paymentData._links?.scaRedirect?.href) {
+      // Redirect user to bank's authentication page
+      res.redirect(307, paymentData._links.scaRedirect.href);
+    } else {
+      throw new Error('No redirect URL received from bank');
     }
-    res.redirect(307, '/checkout/success');
 
   } catch (error) {
     console.error('Callback error:', error);
