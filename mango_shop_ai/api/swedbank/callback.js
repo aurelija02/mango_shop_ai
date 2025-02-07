@@ -1,17 +1,8 @@
 export default async function handler(req, res) {
   try {
-    // Log incoming request details (for development)
-    console.log('Received callback:', {
-      query: req.query,
-      method: req.method
-    });
+    console.log('Starting callback handler...');
+    const { code } = req.query;
 
-    // Get authorization code and state from Swedbank
-    const { code, state } = req.query;
-
-    // Remove sessionStorage validation for now
-    // We can implement a more secure state validation later using cookies or database
-    
     if (!code) {
       throw new Error('No authorization code received');
     }
@@ -37,12 +28,15 @@ export default async function handler(req, res) {
       throw new Error(tokenData.tppMessages?.[0]?.text || 'Failed to exchange token');
     }
 
+    console.log('Initiating payment...');
+    
+    // Make sure to await the payment response
     // Initiate SEPA payment
     const paymentResponse = await fetch('https://psd2.api.swedbank.lt/sandbox/v5/payments/sepa-credit-transfers', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer dummyToken`,
+        'Authorization': 'Bearer dummyToken',
         'X-Request-ID': crypto.randomUUID(),
         'PSU-IP-Address': req.headers['x-forwarded-for'] || req.socket.remoteAddress,
         'Date': new Date().toUTCString(),
@@ -64,7 +58,11 @@ export default async function handler(req, res) {
       })
     });
 
+    console.log('Payment response status:', paymentResponse.status);
+    
+    // Make sure to await the JSON parsing
     const paymentData = await paymentResponse.json();
+    console.log('Payment data:', paymentData);
 
     if (!paymentResponse.ok) {
       const errorMessage = paymentData.tppMessages?.[0]?.text || 'Payment initiation failed';
@@ -77,7 +75,7 @@ export default async function handler(req, res) {
       `https://psd2.api.swedbank.lt/sandbox/v5/payments/sepa-credit-transfers/${paymentId}/status`,
       {
         headers: {
-          'Authorization': `Bearer dummyToken`,
+          'Authorization': 'Bearer dummyToken',
           'X-Request-ID': crypto.randomUUID(),
           'bic': 'SANDLT22'
         }
