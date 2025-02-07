@@ -42,6 +42,7 @@ export default async function handler(req, res) {
         'Authorization': 'Bearer dummyToken',
         'X-Request-ID': crypto.randomUUID(),
         'PSU-IP-Address': req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+        'PSU-User-Agent': req.headers['user-agent'] || 'Mozilla/5.0',
         'Date': new Date().toUTCString(),
         'bic': 'SANDLT22'
       },
