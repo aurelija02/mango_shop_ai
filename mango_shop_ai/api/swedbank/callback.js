@@ -7,26 +7,26 @@ export default async function handler(req, res) {
       throw new Error('No authorization code received');
     }
 
-    // Exchange code for token (using v5 and psd2 path)
-    const tokenResponse = await fetch('https://psd2.api.swedbank.com/psd2/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: process.env.SWEDBANK_CLIENT_ID,
-        client_secret: process.env.SWEDBANK_CLIENT_SECRET,
-        code: code,
-        redirect_uri: 'https://mango-tango-shop.vercel.app/api/swedbank/callback'
-      })
-    });
+    // // Exchange code for token (using v5 and psd2 path)
+    // const tokenResponse = await fetch('https://psd2.api.swedbank.com/psd2/token', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/x-www-form-urlencoded',
+    //   },
+    //   body: new URLSearchParams({
+    //     grant_type: 'authorization_code',
+    //     client_id: process.env.SWEDBANK_CLIENT_ID,
+    //     client_secret: process.env.SWEDBANK_CLIENT_SECRET,
+    //     code: code,
+    //     redirect_uri: 'https://mango-tango-shop.vercel.app/api/swedbank/callback'
+    //   })
+    // });
 
-    const tokenData = await tokenResponse.json();
+    // const tokenData = await tokenResponse.json();
 
-    if (!tokenResponse.ok) {
-      throw new Error(tokenData.tppMessages?.[0]?.text || 'Failed to exchange token');
-    }
+    // if (!tokenResponse.ok) {
+    //   throw new Error(tokenData.tppMessages?.[0]?.text || 'Failed to exchange token');
+    // }
 
     console.log('Initiating payment...');
     
