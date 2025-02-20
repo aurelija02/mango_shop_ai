@@ -20,7 +20,7 @@ const Checkout = () => {
     const itemsTotal = cartItems.reduce((sum, item) => 
       sum + (item.price * item.quantity), 0
     );
-    const shipping = cartItems.length > 0 ? 4.99 : 0;
+    const shipping = cartItems.length > 0 ? 5.00 : 0;
     return (itemsTotal + shipping).toFixed(2);
   };
 
