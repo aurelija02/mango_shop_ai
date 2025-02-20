@@ -23,21 +23,21 @@ const mangoProducts = [
     id: 1,
     name: 'Tommy Atkins Mango',
     description: 'Sweet and tangy with a firm texture',
-    price: 4.99,
+    price: 5,
     image: '/images/tommy-atkins.png'
   },
   {
     id: 2,
     name: 'Kent Mango',
     description: 'Rich and sweet with a buttery texture',
-    price: 5.99,
+    price: 6,
     image: '/images/kent-mango.png'
   },
   {
     id: 3,
     name: 'Haden Mango',
     description: 'Aromatic and rich with a smooth, fiberless flesh',
-    price: 6.49,
+    price: 7,
     image: '/images/haden-mango.png'
   }
 ];
